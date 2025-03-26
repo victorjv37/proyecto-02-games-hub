@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games Hub</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <style>
+        body {
+            background-color: var(--background-color);
+        }
+        
+        .container {
+            background-color: rgba(3, 5, 24, 0.7);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            margin-bottom: 0;
+        }
+        
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40% 60%;
+            padding: 3rem;
+            width: 100%;
+            height: 800px;
+            background-image: url('https://i.gifer.com/WZQJ.gif');
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            margin: 2rem 0;
+        }
+        
+        .games-grid a, .games-grid div {
+            justify-self: center;
+            margin: 0;
+        }
+        
+        .games-grid a:nth-child(1) {
+            justify-self: start;
+        }
+        
+        .games-grid a:nth-child(2) {
+            justify-self: end;
+        }
+        
+        .games-grid a:nth-child(3) {
+            justify-self: start;
+        }
+        
+        .games-grid div:nth-child(4) {
+            justify-self: end;
+        }
+        
+        .game-card {
+            max-width: 280px;
+            min-height: 250px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: rgba(5, 7, 36, 0.8);
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-color);
+        }
+        
+        .game-card h3 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 1.8em;
+            text-shadow: 0 0 5px var(--accent-color);
+        }
+        
+        .game-card p {
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            max-width: 250px;
+        }
+        
+        .play-button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .play-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        
+        .play-button.disabled {
+            background: linear-gradient(45deg, var(--border-color), #3e4a7a);
+            border: 1px solid var(--accent-color);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: not-allowed;
+        }
+        
+        .play-button.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        @media (max-width: 1200px) {
+            .games-grid {
+                gap: 30% 50%;
+                padding: 2rem;
+                height: auto;
+                min-height: 700px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .games-grid {
+                gap: 25% 40%;
+                padding: 2rem;
+                min-height: 600px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(2, auto);
+                gap: 2rem;
+                padding: 1.5rem;
+                min-height: 550px;
+            }
+            
+            .game-card {
+                max-width: 200px;
+                min-height: 220px;
+                padding: 1rem;
+            }
+            
+            .game-card h3 {
+                font-size: 1.4em;
+            }
+            
+            .game-card p {
+                font-size: 0.9em;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                min-height: auto;
+            }
+            
+            .games-grid a, .games-grid div {
+                justify-self: center;
+            }
+            
+            .games-grid a:nth-child(1),
+            .games-grid a:nth-child(2),
+            .games-grid a:nth-child(3),
+            .games-grid div:nth-child(4) {
+                justify-self: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Games Hub</h1>
+            <nav>
+                <ul>
+                    <li><a href="/" class="active">Home</a></li>
+                    <li><a href="/src/games/tictactoe/tictactoe.html">Tic Tac Toe</a></li>
+                    <li><a href="/src/games/memory/memory.html">Memory Game</a></li>
+                    <li><a href="/src/games/snake/snake.html">Snake</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="games-grid">
+                <a href="/src/games/tictactoe/tictactoe.html" class="game-card">
+                    <h3>Tic Tac Toe</h3>
+                    <p>Classic X's and O's game with a modern twist. Challenge a friend and keep track of your wins!</p>
+                    <span class="play-button">Play Now</span>
+                </a>
+
+                <a href="/src/games/memory/memory.html" class="game-card">
+                    <h3>Memory Game</h3>
+                    <p>Test your memory by matching pairs of cards. Try to complete the game in the fewest moves possible!</p>
+                    <span class="play-button">Play Now</span>
+                </a>
+
+                <a href="/src/games/snake/snake.html" class="game-card">
+                    <h3>Snake</h3>
+                    <p>Classic snake game with smooth controls and modern visuals. Try to beat your high score!</p>
+                    <span class="play-button">Play Now</span>
+                </a>
+                
+                <div class="game-card coming-soon">
+                    <h3>Arcade Collection</h3>
+                    <p>Experience the nostalgia of classic arcade gaming. More games coming soon to our retro collection!</p>
+                    <span class="play-button disabled">Coming Soon</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - Games Hub</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="./snake.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Snake</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/src/games/tictactoe/tictactoe.html">Tic Tac Toe</a></li>
+                    <li><a href="/src/games/memory/memory.html">Memory Game</a></li>
+                    <li><a href="/src/games/snake/snake.html" class="active">Snake</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="game-container">
+            <div class="game-stats">
+                <div class="stat-card">
+                    <h3>Score</h3>
+                    <p id="score">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Best Score</h3>
+                    <p id="best-score">0</p>
+                </div>
+            </div>
+
+            <canvas id="game-board" class="game-board" width="350" height="350"></canvas>
+            
+            <div class="controls">
+                <button class="control-button" id="start-button">Start Game</button>
+                <button class="control-button" id="pause-button">Pause</button>
+            </div>
+
+            <div class="mobile-controls">
+                <button class="control-button" id="left-button">←</button>
+                <button class="control-button" id="up-button">↑</button>
+                <button class="control-button" id="right-button">→</button>
+                <button class="control-button" id="down-button">↓</button>
+            </div>
+
+            <div class="game-over" id="game-over">
+                <h2>Game Over!</h2>
+                <p>Your score: <span id="final-score">0</span></p>
+                <button class="control-button" id="restart-button">Play Again</button>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { SnakeGame } from './snake.js';
+
+        const game = new SnakeGame('game-board');
+        const startButton = document.getElementById('start-button');
+        const pauseButton = document.getElementById('pause-button');
+        const restartButton = document.getElementById('restart-button');
+        const gameOver = document.getElementById('game-over');
+        const finalScore = document.getElementById('final-score');
+        const scoreDisplay = document.getElementById('score');
+        const bestScoreDisplay = document.getElementById('best-score');
+
+        // Mobile controls
+        const leftButton = document.getElementById('left-button');
+        const rightButton = document.getElementById('right-button');
+        const upButton = document.getElementById('up-button');
+        const downButton = document.getElementById('down-button');
+
+        function updateScore() {
+            scoreDisplay.textContent = game.score;
+            bestScoreDisplay.textContent = game.scores.bestScore;
+        }
+
+        startButton.addEventListener('click', () => {
+            game.start();
+            startButton.disabled = true;
+        });
+
+        pauseButton.addEventListener('click', () => {
+            if (game.isPaused) {
+                game.resume();
+                pauseButton.textContent = 'Pause';
+            } else {
+                game.pause();
+                pauseButton.textContent = 'Resume';
+            }
+        });
+
+        restartButton.addEventListener('click', () => {
+            game.reset();
+            gameOver.classList.remove('visible');
+            startButton.disabled = false;
+            pauseButton.textContent = 'Pause';
+        });
+
+        // Mobile controls
+        leftButton.addEventListener('click', () => game.changeDirection('left'));
+        rightButton.addEventListener('click', () => game.changeDirection('right'));
+        upButton.addEventListener('click', () => game.changeDirection('up'));
+        downButton.addEventListener('click', () => game.changeDirection('down'));
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    game.changeDirection('left');
+                    break;
+                case 'ArrowRight':
+                    game.changeDirection('right');
+                    break;
+                case 'ArrowUp':
+                    game.changeDirection('up');
+                    break;
+                case 'ArrowDown':
+                    game.changeDirection('down');
+                    break;
+            }
+        });
+
+        // Game over handler
+        game.onGameOver = (score) => {
+            finalScore.textContent = score;
+            gameOver.classList.add('visible');
+            startButton.disabled = false;
+            updateScore();
+        };
+
+        // Score update handler
+        game.onScoreUpdate = updateScore;
+
+        // Initialize the game
+        updateScore();
+    </script>
+</body>
+</html> 

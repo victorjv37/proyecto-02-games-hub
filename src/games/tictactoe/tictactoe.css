@@ -1,0 +1,136 @@
+.game-container {
+    max-width: 500px;
+    margin: 1rem auto;
+    text-align: center;
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 1rem auto;
+    max-width: 300px;
+    position: relative;
+    background-color: var(--card-background);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.151);
+}
+
+.cell {
+    background: rgba(6, 8, 41, 0.9);
+    aspect-ratio: 1;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.cell:hover {
+    border-color: var(--accent-color);
+    background-color: rgba(0, 242, 255, 0.1);
+    box-shadow: 0 0 10px var(--accent-color);
+}
+
+.cell.x {
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+.cell.o {
+    color: var(--accent-color);
+    text-shadow: 0 0 10px var(--accent-color);
+}
+
+.game-info {
+    margin: 1rem 0;
+    padding: 0.8rem;
+    background: var(--card-background);
+    border-radius: 8px;
+    border: 1px solid var(--accent-color);
+}
+
+.status {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-color);
+}
+
+.score {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 1rem 0;
+}
+
+.score-card {
+    background: var(--card-background);
+    padding: 0.8rem;
+    border-radius: 8px;
+    min-width: 100px;
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+}
+
+.score-card h3 {
+    color: var(--accent-color);
+    margin-bottom: 0.3rem;
+    text-shadow: 0 0 5px var(--accent-color);
+    font-size: 1rem;
+}
+
+.reset-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.8rem;
+}
+
+.reset-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+.win-message {
+    font-size: 1.2rem;
+    margin: 0.8rem 0;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px var(--accent-color);
+    font-weight: bold;
+}
+
+.winning-line {
+    position: absolute;
+    background: var(--primary-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+@media (max-width: 500px) {
+    .game-board {
+        max-width: 250px;
+    }
+
+    .cell {
+        font-size: 1.8rem;
+    }
+
+    .score {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+} 
