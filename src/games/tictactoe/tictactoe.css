@@ -19,7 +19,7 @@
 }
 
 .cell {
-    background: rgba(6, 8, 41, 0.9);
+    background: rgba(6, 8, 41, 0.897);
     aspect-ratio: 1;
     border: 2px solid var(--border-color);
     border-radius: 6px;
