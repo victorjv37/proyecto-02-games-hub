@@ -29,6 +29,9 @@
 
 .game-board {
     background: rgba(5, 7, 36, 0.9);
+    background-image: url('https://i.gifer.com/WZQJ.gif');
+    background-size: cover;
+    background-position: center;
     border: 1px solid var(--accent-color);
     border-radius: 8px;
     margin: 0.5rem auto;
@@ -61,6 +64,13 @@
     background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: var(--primary-shadow);
+}
+
+.control-button:disabled {
+    background: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .game-over {
@@ -159,4 +169,4 @@
     .game-board {
         max-width: 250px;
     }
-} 
+}

@@ -14,7 +14,8 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         tictactoe: resolve(__dirname, 'src/games/tictactoe/tictactoe.html'),
         memory: resolve(__dirname, 'src/games/memory/memory.html'),
-        snake: resolve(__dirname, 'src/games/snake/snake.html')
+        snake: resolve(__dirname, 'src/games/snake/snake.html'),
+        asteroids: resolve(__dirname, 'src/games/asteroids/asteroids.html')
       }
     }
   }

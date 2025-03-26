@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroids - Games Hub</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="./asteroids.css">
+</head>
+<body class="game-page">
+    <div class="app-wrapper">
+        <header class="fixed-header">
+            <h1>Asteroids</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/src/games/tictactoe/tictactoe.html">Tic Tac Toe</a></li>
+                    <li><a href="/src/games/memory/memory.html">Memory Game</a></li>
+                    <li><a href="/src/games/snake/snake.html">Snake</a></li>
+                    <li><a href="/src/games/asteroids/asteroids.html" class="active">Asteroids</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="content-container">
+            <main class="game-container">
+                <div class="game-stats">
+                    <div class="stat-card">
+                        <h3>Score</h3>
+                        <p id="score">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Best Score</h3>
+                        <p id="best-score">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Lives</h3>
+                        <p id="lives">3</p>
+                    </div>
+                </div>
+
+                <canvas id="game-board" class="game-board" width="400" height="400"></canvas>
+                
+                <div class="controls">
+                    <button class="control-button" id="start-button">Start Game</button>
+                    <button class="control-button" id="pause-button">Pause</button>
+                </div>
+
+                <div class="mobile-controls">
+                    <button class="control-button" id="left-button">←</button>
+                    <button class="control-button" id="thrust-button">▲</button>
+                    <button class="control-button" id="right-button">→</button>
+                    <button class="control-button" id="fire-button">🔫</button>
+                </div>
+
+                <div class="game-over" id="game-over">
+                    <h2>Game Over!</h2>
+                    <p>Your score: <span id="final-score">0</span></p>
+                    <button class="control-button" id="restart-button">Play Again</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module" src="./asteroids.js"></script>
+    <script type="module" src="../../main.js"></script>
+</body>
+</html>
