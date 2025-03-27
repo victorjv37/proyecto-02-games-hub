@@ -59,7 +59,27 @@
                 cardElement.className = 'memory-card';
                 if (card.isFlipped) cardElement.classList.add('flipped');
                 if (card.isMatched) cardElement.classList.add('matched');
-                cardElement.textContent = card.isFlipped || card.isMatched ? card.emoji : '?';
+                
+                // Create front side (icon)
+                const cardFront = document.createElement('div');
+                cardFront.className = 'card-front';
+                if (card.isFlipped || card.isMatched) {
+                    const iconImg = document.createElement('img');
+                    iconImg.src = card.iconPath;
+                    iconImg.alt = 'Retro game icon';
+                    iconImg.className = 'card-icon';
+                    cardFront.appendChild(iconImg);
+                }
+                
+                // Create back side (question mark)
+                const cardBack = document.createElement('div');
+                cardBack.className = 'card-back';
+                cardBack.textContent = '?';
+                
+                // Add front and back to the card
+                cardElement.appendChild(cardFront);
+                cardElement.appendChild(cardBack);
+                
                 cardElement.addEventListener('click', () => flipCard(card.id));
                 cardsGrid.appendChild(cardElement);
             });

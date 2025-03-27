@@ -14,9 +14,9 @@
 .stat-card {
     background: var(--card-background);
     padding: 0.6rem;
-    border-radius: 6px;
+    border-radius: 0;
     min-width: 100px;
-    border: 1px solid var(--accent-color);
+    border: 3px solid var(--accent-color);
     box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
 }
 
@@ -24,7 +24,9 @@
     color: var(--accent-color);
     margin-bottom: 0.2rem;
     text-shadow: 0 0 5px var(--accent-color);
-    font-size: 1rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .cards-grid {
@@ -37,20 +39,22 @@
     aspect-ratio: 1;
     background-color: var(--card-background);
     padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--accent-color);
+    border-radius: 0;
+    border: 3px solid var(--accent-color);
     box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+    image-rendering: pixelated;
 }
 
 .memory-card {
     aspect-ratio: 1;
     background: rgba(5, 7, 36, 0.9);
     border: 2px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.3rem;
+    font-family: var(--retro-font);
     cursor: pointer;
     transition: all 0.3s ease;
     transform-style: preserve-3d;
@@ -79,7 +83,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .card-front {
@@ -87,23 +91,38 @@
     transform: rotateY(180deg);
     color: var(--accent-color);
     text-shadow: 0 0 10px var(--accent-color);
+    padding: 5px;
 }
 
 .card-back {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+    font-size: 2rem;
+    color: white;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.card-icon {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 3px var(--accent-color));
 }
 
 .reset-button {
     background: var(--primary-color);
     color: white;
-    border: none;
+    border: 2px solid white;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    border-radius: 0;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 0.5rem;
+    font-family: var(--retro-font);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .reset-button:hover {
@@ -113,11 +132,14 @@
 }
 
 .win-message {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     margin: 0.5rem 0;
     color: var(--accent-color);
     text-shadow: 0 0 10px var(--accent-color);
     font-weight: bold;
+    font-family: var(--retro-font);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 @media (max-width: 600px) {

@@ -1,8 +1,73 @@
+/* ==========================================================================
+   GAME CONTAINER AND LAYOUT
+   ========================================================================== */
+
 .game-container {
     max-width: 600px;
     margin: 0.5rem auto;
     text-align: center;
+    position: relative;
 }
+
+.game-canvas-container {
+    position: relative;
+    margin: 0.5rem auto;
+    max-width: 400px;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 0;
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+    image-rendering: pixelated;
+}
+
+.animated-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    image-rendering: pixelated;
+}
+
+.animated-background.hidden {
+    display: none;
+}
+
+.animated-background.visible {
+    display: block;
+}
+
+.game-board {
+    background: transparent;
+    position: relative;
+    min-width: 100%;
+    height: 100%;
+    z-index: 2;
+    border: none;
+}
+
+/* Canvas element styles - for JS rendering */
+#game-board {
+    /* Canvas drawing styles */
+    --ship-stroke: #00f2ff;
+    --bullet-fill: #ff3333;
+    --bullet-glow: #ff0000;
+    --bullet-shadow-blur: 25px;
+    --asteroid-fill: #00f2ff;
+    --heart-fill: #ff3366;
+    --heart-hit-fill: rgb(255, 50, 100);
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --overlay-text: #00f2ff;
+    font-family: var(--retro-font);
+}
+
+/* ==========================================================================
+   STATS DISPLAY
+   ========================================================================== */
 
 .game-stats {
     display: flex;
@@ -14,9 +79,9 @@
 .stat-card {
     background: var(--card-background);
     padding: 0.6rem;
-    border-radius: 6px;
+    border-radius: 0;
     min-width: 100px;
-    border: 1px solid var(--accent-color);
+    border: 3px solid var(--accent-color);
     box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
 }
 
@@ -24,23 +89,14 @@
     color: var(--accent-color);
     margin-bottom: 0.2rem;
     text-shadow: 0 0 5px var(--accent-color);
-    font-size: 1rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.game-board {
-    background: rgba(5, 7, 36, 0.9);
-    background-image: url('https://i.gifer.com/WZQJ.gif');
-    background-size: cover;
-    background-position: center;
-    border: 1px solid var(--accent-color);
-    border-radius: 8px;
-    margin: 0.5rem auto;
-    position: relative;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-    max-width: 400px;
-    width: 100%;
-    aspect-ratio: 1;
-}
+/* ==========================================================================
+   GAME CONTROLS
+   ========================================================================== */
 
 .controls {
     display: flex;
@@ -52,12 +108,15 @@
 .control-button {
     background: var(--primary-color);
     color: white;
-    border: none;
+    border: 2px solid white;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    border-radius: 0;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-family: var(--retro-font);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .control-button:hover {
@@ -73,33 +132,7 @@
     box-shadow: none;
 }
 
-.game-over {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(3, 5, 24, 0.95);
-    color: white;
-    padding: 1.2rem;
-    border-radius: 8px;
-    text-align: center;
-    display: none;
-    z-index: 10;
-    border: 1px solid var(--primary-color);
-    box-shadow: var(--primary-shadow);
-}
-
-.game-over.visible {
-    display: block;
-}
-
-.game-over h2 {
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 10px var(--primary-color);
-    font-size: 1.3rem;
-}
-
+/* Mobile controls */
 .mobile-controls {
     display: none;
     grid-template-columns: repeat(3, 1fr);
@@ -110,11 +143,13 @@
 
 .mobile-controls button {
     aspect-ratio: 1;
-    font-size: 1.2rem;
+    font-size: 1rem;
     padding: 0;
     background: var(--card-background);
-    border: 1px solid var(--accent-color);
+    border: 2px solid var(--accent-color);
     color: var(--accent-color);
+    border-radius: 0;
+    font-family: var(--retro-font);
 }
 
 .mobile-controls button:hover {
@@ -124,7 +159,7 @@
 
 .mobile-controls button:nth-child(1) {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 1;
 }
 
 .mobile-controls button:nth-child(2) {
@@ -134,22 +169,61 @@
 
 .mobile-controls button:nth-child(3) {
     grid-column: 3;
-    grid-row: 2;
+    grid-row: 1;
 }
 
-.mobile-controls button:nth-child(4) {
-    grid-column: 2;
-    grid-row: 3;
+/* ==========================================================================
+   GAME OVER SCREEN
+   ========================================================================== */
+
+.game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(3, 5, 24, 0.95);
+    color: white;
+    padding: 1.2rem;
+    border-radius: 0;
+    text-align: center;
+    display: none;
+    z-index: 10;
+    border: 3px solid var(--primary-color);
+    box-shadow: var(--primary-shadow);
+    font-family: var(--retro-font);
 }
+
+.game-over.visible {
+    display: block;
+}
+
+.game-over h2 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px var(--primary-color);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   RESPONSIVE STYLES
+   ========================================================================== */
 
 @media (max-width: 600px) {
     .mobile-controls {
         display: grid;
     }
 
-    .game-board {
+    .game-canvas-container {
         max-width: 300px;
         height: auto;
+        margin: 0 auto;
+    }
+    
+    .animated-background {
+        width: 100%;
+        height: 100%;
     }
 
     .game-stats {
@@ -166,7 +240,7 @@
 }
 
 @media (max-width: 350px) {
-    .game-board {
+    .game-canvas-container {
         max-width: 250px;
     }
 }

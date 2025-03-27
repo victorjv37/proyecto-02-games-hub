@@ -266,7 +266,7 @@ window.addEventListener('resize', function() {
 });
 
 // Handle navigation and recreate GIFs on page change
-document.querySelectorAll('nav a, .play-button').forEach(link => {
+document.querySelectorAll('nav a').forEach(link => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
     const path = e.target.getAttribute('href');
@@ -278,6 +278,22 @@ document.querySelectorAll('nav a, .play-button').forEach(link => {
     
     // Navigate to the selected page
     window.location.href = path;
+  });
+});
+
+// Make entire game cards clickable
+document.querySelectorAll('.game-card').forEach(card => {
+  card.addEventListener('click', (e) => {
+    // Only handle clicks on the card itself, not on its child elements
+    if (e.target === card) {
+      const playButton = card.querySelector('.play-button');
+      if (playButton) {
+        const gameUrl = playButton.getAttribute('href');
+        if (gameUrl) {
+          window.location.href = gameUrl;
+        }
+      }
+    }
   });
 });
 

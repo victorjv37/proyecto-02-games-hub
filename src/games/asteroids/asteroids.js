@@ -1,11 +1,25 @@
 export class AsteroidsGame {
+  /**
+   * Constructor for the Asteroids game
+   * @param {string} canvasId - ID of the canvas element
+   */
   constructor(canvasId) {
+    // Canvas setup
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
+    
+    // Ensure canvas fills its container
+    const container = this.canvas.parentElement;
+    this.canvas.width = container.clientWidth;
+    this.canvas.height = container.clientHeight;
     this.width = this.canvas.width;
     this.height = this.canvas.height;
     
-    // Game state
+    // Background elements
+    this.activeBackground = document.getElementById('active-background');
+    this.pausedBackground = document.getElementById('paused-background');
+    
+    // Game state initialization
     this.score = 0;
     this.lives = 3;
     this.level = 1;
@@ -14,60 +28,153 @@ export class AsteroidsGame {
     this.gameLoop = null;
     this.isPaused = false;
     this.isGameOver = false;
+    this.showStartScreen = true;
+    this.heartBlinkTime = 0;
     
-    // Load ship image
+    // Callbacks for external UI updates
+    this.onScoreUpdate = null;
+    this.onGameOver = null;
+    this.onGameStart = null;
+    this.onGamePause = null;
+    this.onGameResume = null;
+    this.onGameReset = null;
+    
+    // Load game assets
+    this.loadImages();
+    
+    // Ship properties - faster speed for easier control
+    this.ship = {
+      x: this.width / 2,
+      y: this.height - 60,
+      radius: 15,
+      width: 40,
+      height: 40,
+      invulnerable: false,
+      speed: 7
+    };
+    
+    // Set initial background state
+    this.updateBackgroundVisibility();
+    
+    // Load saved scores and draw initial screen
+    this.loadScores();
+    this.draw();
+  }
+  
+  /**
+   * Load all game images
+   */
+  loadImages() {
+    // Ship image
     this.shipImage = new Image();
-    this.shipImage.src = 'https://i.gifer.com/1pIq.gif';
+    this.shipImage.src = 'https://i.gifer.com/origin/a2/a2efb3cf71b7b2a95d8d0c6236f00c88_w200.webp';
     this.shipImageLoaded = false;
     this.shipImage.onload = () => {
       this.shipImageLoaded = true;
     };
     
-    // Ship properties
-    this.ship = {
-      x: this.width / 2,
-      y: this.height / 2,
-      radius: 15,
-      angle: 0,
-      rotation: 0,
-      thrusting: false,
-      thrust: {
-        x: 0,
-        y: 0
-      },
-      invulnerable: false,
-      width: 40,  // Width of ship image
-      height: 40  // Height of ship image
+    // Asteroid image
+    this.asteroidImage = new Image();
+    this.asteroidImage.src = 'https://images.vexels.com/media/users/3/203033/isolated/preview/bad8b13b449cf80e9cdbf1c355d63f4f-ilustracion-de-gran-asteroide.png';
+    this.asteroidImageLoaded = false;
+    this.asteroidImage.onload = () => {
+      this.asteroidImageLoaded = true;
     };
     
-    this.loadScores();
+    // Bullet image
+    this.bulletImage = new Image();
+    this.bulletImage.src = '/—Pngtree—red bullet effect light effect_7150008.png';
+    this.bulletImageLoaded = false;
+    this.bulletImage.onload = () => {
+      this.bulletImageLoaded = true;
+    };
   }
   
+  /**
+   * Update background visibility based on game state
+   */
+  updateBackgroundVisibility() {
+    if (this.isPaused || this.showStartScreen) {
+      this.activeBackground.classList.add('hidden');
+      this.activeBackground.classList.remove('visible');
+      this.pausedBackground.classList.add('visible');
+      this.pausedBackground.classList.remove('hidden');
+    } else {
+      this.activeBackground.classList.add('visible');
+      this.activeBackground.classList.remove('hidden');
+      this.pausedBackground.classList.add('hidden');
+      this.pausedBackground.classList.remove('visible');
+    }
+  }
+  
+  // ===== GAME STATE MANAGEMENT =====
+  
+  /**
+   * Load player scores from localStorage
+   */
   loadScores() {
     const savedScores = localStorage.getItem('asteroidsScores');
     this.scores = savedScores ? JSON.parse(savedScores) : { bestScore: 0 };
   }
   
+  /**
+   * Save player scores to localStorage
+   */
   saveScores() {
     localStorage.setItem('asteroidsScores', JSON.stringify(this.scores));
   }
   
+  /**
+   * Start the game
+   */
   start() {
     if (!this.gameLoop) {
+      this.showStartScreen = false;
+      this.isPaused = false;
+      this.isGameOver = false;
+      this.updateBackgroundVisibility();
       this.initializeAsteroids();
       this.gameLoop = setInterval(() => this.update(), 1000 / 60); // 60 FPS
       this.draw();
+      
+      // Notify UI that game has started
+      if (this.onGameStart) {
+        this.onGameStart();
+      }
     }
   }
   
+  /**
+   * Pause the game
+   */
   pause() {
     this.isPaused = true;
+    this.updateBackgroundVisibility();
+    this.draw();
+    
+    // Notify UI that game has paused
+    if (this.onGamePause) {
+      this.onGamePause();
+    }
   }
   
+  /**
+   * Resume the game
+   */
   resume() {
     this.isPaused = false;
+    this.updateBackgroundVisibility();
+    this.draw();
+    
+    // Notify UI that game has resumed
+    if (this.onGameResume) {
+      this.onGameResume();
+    }
   }
   
+  /**
+   * Reset the game to initial state
+   */
   reset() {
     clearInterval(this.gameLoop);
     this.gameLoop = null;
@@ -78,28 +185,58 @@ export class AsteroidsGame {
     this.bullets = [];
     this.isPaused = false;
     this.isGameOver = false;
+    this.showStartScreen = true;
     
     this.ship = {
       x: this.width / 2,
-      y: this.height / 2,
+      y: this.height - 60,
       radius: 15,
-      angle: 0,
-      rotation: 0,
-      thrusting: false,
-      thrust: {
-        x: 0,
-        y: 0
-      },
+      width: 40,
+      height: 40,
       invulnerable: false,
-      width: 40,  // Width of ship image
-      height: 40  // Height of ship image
+      speed: 7 // Faster speed consistent with constructor
     };
     
+    this.updateBackgroundVisibility();
     this.draw();
+    
+    // Notify UI that game has been reset
+    if (this.onGameReset) {
+      this.onGameReset();
+    }
+    
+    // Also update score display
+    if (this.onScoreUpdate) {
+      this.onScoreUpdate();
+    }
   }
   
+  /**
+   * Game over handler
+   */
+  gameOver() {
+    this.isGameOver = true;
+    clearInterval(this.gameLoop);
+    this.gameLoop = null;
+    
+    if (this.score > this.scores.bestScore) {
+      this.scores.bestScore = this.score;
+      this.saveScores();
+    }
+    
+    if (this.onGameOver) {
+      this.onGameOver(this.score);
+    }
+  }
+  
+  // ===== GAME OBJECT MANAGEMENT =====
+  
+  /**
+   * Initialize asteroids at the start of a level
+   */
   initializeAsteroids() {
-    const numAsteroids = 3 + (this.level - 1) * 2;
+    // Reduced number of asteroids per level
+    const numAsteroids = 2 + Math.floor((this.level - 1) * 0.7);
     this.asteroids = [];
     
     for (let i = 0; i < numAsteroids; i++) {
@@ -107,12 +244,18 @@ export class AsteroidsGame {
     }
   }
   
+  /**
+   * Create a new asteroid
+   * @param {number} x - Optional x position
+   * @param {number} y - Optional y position
+   * @param {string} size - Size of asteroid ('large', 'medium', 'small')
+   */
   createAsteroid(x, y, size = 'large') {
     // Define asteroid sizes and scores
     const sizes = {
-      large: { radius: 40, score: 20 },
-      medium: { radius: 25, score: 50 },
-      small: { radius: 15, score: 100 }
+      large: { radius: 25, score: 20 },
+      medium: { radius: 15, score: 50 },
+      small: { radius: 8, score: 100 }
     };
     
     // Random position if not specified
@@ -126,12 +269,9 @@ export class AsteroidsGame {
       
       while (!validPos) {
         posX = Math.random() * this.width;
-        posY = Math.random() * this.height;
+        posY = -sizes[size].radius; // Start above the screen
         
-        const distanceToShip = Math.sqrt(
-          Math.pow(posX - this.ship.x, 2) + 
-          Math.pow(posY - this.ship.y, 2)
-        );
+        const distanceToShip = Math.abs(posX - this.ship.x);
         
         if (distanceToShip > safeDistance) {
           validPos = true;
@@ -139,52 +279,86 @@ export class AsteroidsGame {
       }
     }
     
-    // Create the asteroid
+    // Create the asteroid with slower downward movement
     this.asteroids.push({
       x: posX,
       y: posY,
-      xVelocity: (Math.random() * 2 - 1) * (4 - sizes[size].radius / 20),
-      yVelocity: (Math.random() * 2 - 1) * (4 - sizes[size].radius / 20),
+      xVelocity: (Math.random() * 2 - 1) * 1.2, // Reduced horizontal movement
+      yVelocity: 1 + Math.random() * 1.5 + (this.level - 1) * 0.3, // Reduced speed, slower level scaling
       radius: sizes[size].radius,
-      angle: Math.random() * Math.PI * 2,
-      vertices: Math.floor(Math.random() * 4) + 7, // 7-10 vertices
-      jaggedness: 0.4, // how jagged the asteroid looks
       size: size,
-      scoreValue: sizes[size].score
+      scoreValue: sizes[size].score,
+      rotation: Math.random() * Math.PI * 2, // Random initial rotation
+      rotationSpeed: (Math.random() * 0.1 - 0.05) // Random rotation speed
     });
   }
   
+  /**
+   * Create a bullet from the ship
+   */
   shoot() {
-    // Create a bullet
-    const bulletSpeed = 7;
-    const angle = this.ship.angle;
-    
-    // Calculate bullet starting position from the front of the ship
-    const bulletOffsetFromShip = this.ship.radius + 5; // Offset from ship center
+    // Only shoot if the game is running
+    if (!this.gameLoop || this.isPaused || this.isGameOver || this.showStartScreen) {
+      return;
+    }
     
     this.bullets.push({
-      x: this.ship.x + Math.cos(angle) * bulletOffsetFromShip,
-      y: this.ship.y - Math.sin(angle) * bulletOffsetFromShip,
-      xVelocity: bulletSpeed * Math.cos(angle),
-      yVelocity: -bulletSpeed * Math.sin(angle),
-      radius: 2,
-      lifespan: 60 // frames
+      x: this.ship.x,
+      y: this.ship.y - this.ship.height/2,
+      xVelocity: 0,
+      yVelocity: -12, // Even faster bullet speed
+      radius: 6, // Increased size to match the larger visual
+      lifespan: 60
     });
   }
   
+  /**
+   * Break asteroid into smaller pieces when hit
+   * @param {number} index - Index of the asteroid to break
+   */
+  breakAsteroid(index) {
+    const asteroid = this.asteroids[index];
+    
+    // Split asteroid based on size
+    if (asteroid.size === 'large') {
+      // Create 2 medium asteroids
+      for (let i = 0; i < 2; i++) {
+        this.createAsteroid(asteroid.x, asteroid.y, 'medium');
+      }
+    } else if (asteroid.size === 'medium') {
+      // Create 2 small asteroids
+      for (let i = 0; i < 2; i++) {
+        this.createAsteroid(asteroid.x, asteroid.y, 'small');
+      }
+    }
+    
+    // Remove original asteroid
+    this.asteroids.splice(index, 1);
+  }
+  
+  /**
+   * Ship temporarily invulnerable
+   */
+  resetShip() {
+    this.ship.invulnerable = true;
+    
+    // Reset invulnerability after 3 seconds
+    setTimeout(() => {
+      this.ship.invulnerable = false;
+    }, 3000);
+  }
+  
+  // ===== GAME UPDATE LOGIC =====
+  
+  /**
+   * Main game update loop
+   */
   update() {
     if (this.isPaused || this.isGameOver) return;
     
-    // Update ship position and rotation
     this.updateShip();
-    
-    // Update bullets
     this.updateBullets();
-    
-    // Update asteroids
     this.updateAsteroids();
-    
-    // Check collisions
     this.checkCollisions();
     
     // Check if level is completed
@@ -193,55 +367,33 @@ export class AsteroidsGame {
       this.initializeAsteroids();
     }
     
-    // Draw everything
     this.draw();
   }
   
+  /**
+   * Update ship position
+   */
   updateShip() {
-    // Rotate ship
-    this.ship.angle += this.ship.rotation;
+    // Only update horizontal position
+    this.ship.x += this.ship.thrust?.x || 0;
     
-    // Apply thrust
-    if (this.ship.thrusting) {
-      const thrustX = 0.1 * Math.cos(this.ship.angle);
-      const thrustY = -0.1 * Math.sin(this.ship.angle);
-      
-      this.ship.thrust.x += thrustX;
-      this.ship.thrust.y += thrustY;
-      
-      // Limit thrust
-      const maxThrust = 4;
-      const currentThrust = Math.sqrt(
-        Math.pow(this.ship.thrust.x, 2) + 
-        Math.pow(this.ship.thrust.y, 2)
-      );
-      
-      if (currentThrust > maxThrust) {
-        this.ship.thrust.x = (this.ship.thrust.x / currentThrust) * maxThrust;
-        this.ship.thrust.y = (this.ship.thrust.y / currentThrust) * maxThrust;
-      }
-    } else {
-      // Apply friction
-      this.ship.thrust.x *= 0.98;
-      this.ship.thrust.y *= 0.98;
+    // Keep ship within bounds
+    if (this.ship.x < this.ship.width/2) {
+      this.ship.x = this.ship.width/2;
     }
-    
-    // Update ship position
-    this.ship.x += this.ship.thrust.x;
-    this.ship.y += this.ship.thrust.y;
-    
-    // Wrap around the screen edges
-    this.wrapAround(this.ship);
+    if (this.ship.x > this.width - this.ship.width/2) {
+      this.ship.x = this.width - this.ship.width/2;
+    }
   }
   
+  /**
+   * Update bullets position and lifespan
+   */
   updateBullets() {
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       // Update bullet position
       this.bullets[i].x += this.bullets[i].xVelocity;
       this.bullets[i].y += this.bullets[i].yVelocity;
-      
-      // Wrap around screen edges
-      this.wrapAround(this.bullets[i]);
       
       // Reduce bullet lifespan
       this.bullets[i].lifespan--;
@@ -253,33 +405,30 @@ export class AsteroidsGame {
     }
   }
   
+  /**
+   * Update asteroids position
+   */
   updateAsteroids() {
     for (let i = this.asteroids.length - 1; i >= 0; i--) {
       // Update asteroid position
       this.asteroids[i].x += this.asteroids[i].xVelocity;
       this.asteroids[i].y += this.asteroids[i].yVelocity;
       
-      // Wrap around screen edges
-      this.wrapAround(this.asteroids[i]);
+      // Just remove asteroids that go off screen without penalty
+      if (this.asteroids[i].y > this.height + this.asteroids[i].radius) {
+        this.asteroids.splice(i, 1);
+        
+        // Only replace asteroid if not too many on screen
+        if (this.asteroids.length < 12) {
+          this.createAsteroid();
+        }
+      }
     }
   }
   
-  wrapAround(object) {
-    // Wrap horizontally
-    if (object.x < 0 - object.radius) {
-      object.x = this.width + object.radius;
-    } else if (object.x > this.width + object.radius) {
-      object.x = 0 - object.radius;
-    }
-    
-    // Wrap vertically
-    if (object.y < 0 - object.radius) {
-      object.y = this.height + object.radius;
-    } else if (object.y > this.height + object.radius) {
-      object.y = 0 - object.radius;
-    }
-  }
-  
+  /**
+   * Check for collisions between game objects
+   */
   checkCollisions() {
     // Check bullet-asteroid collisions
     for (let i = this.asteroids.length - 1; i >= 0; i--) {
@@ -324,6 +473,8 @@ export class AsteroidsGame {
         
         if (distance < asteroid.radius + shipCollisionRadius) {
           this.lives--;
+          this.heartBlinkTime = Date.now(); // Start heart blink animation
+          
           if (this.onScoreUpdate) this.onScoreUpdate();
           
           if (this.lives <= 0) {
@@ -338,69 +489,34 @@ export class AsteroidsGame {
     }
   }
   
-  breakAsteroid(index) {
-    const asteroid = this.asteroids[index];
-    
-    // Split asteroid based on size
-    if (asteroid.size === 'large') {
-      // Create 2 medium asteroids
-      for (let i = 0; i < 2; i++) {
-        this.createAsteroid(asteroid.x, asteroid.y, 'medium');
-      }
-    } else if (asteroid.size === 'medium') {
-      // Create 2 small asteroids
-      for (let i = 0; i < 2; i++) {
-        this.createAsteroid(asteroid.x, asteroid.y, 'small');
-      }
-    }
-    
-    // Remove original asteroid
-    this.asteroids.splice(index, 1);
-  }
+  // ===== RENDERING =====
   
-  resetShip() {
-    this.ship.x = this.width / 2;
-    this.ship.y = this.height / 2;
-    this.ship.thrust = { x: 0, y: 0 };
-    this.ship.angle = 0;
-    this.ship.invulnerable = true;
-    
-    // Reset invulnerability after 3 seconds
-    setTimeout(() => {
-      this.ship.invulnerable = false;
-    }, 3000);
-  }
-  
-  gameOver() {
-    this.isGameOver = true;
-    clearInterval(this.gameLoop);
-    this.gameLoop = null;
-    
-    if (this.score > this.scores.bestScore) {
-      this.scores.bestScore = this.score;
-      this.saveScores();
-    }
-    
-    if (this.onGameOver) {
-      this.onGameOver(this.score);
-    }
-  }
-  
+  /**
+   * Main draw function
+   */
   draw() {
-    // Clear canvas
-    this.ctx.fillStyle = '#111';
-    this.ctx.fillRect(0, 0, this.width, this.height);
+    // Clear canvas with transparent background (since we have the GIF behind)
+    this.ctx.clearRect(0, 0, this.width, this.height);
     
-    // Draw ship
+    // Draw game objects
     this.drawShip();
-    
-    // Draw bullets
     this.drawBullets();
-    
-    // Draw asteroids
     this.drawAsteroids();
+    this.drawHearts();
+    
+    // Draw overlays
+    if (this.isPaused) {
+      this.drawPauseOverlay();
+    }
+    
+    if (this.showStartScreen) {
+      this.drawStartScreenOverlay();
+    }
   }
   
+  /**
+   * Draw the ship
+   */
   drawShip() {
     if (this.ship.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
       return; // Skip drawing to create blinking effect
@@ -408,13 +524,12 @@ export class AsteroidsGame {
     
     this.ctx.save();
     this.ctx.translate(this.ship.x, this.ship.y);
-    this.ctx.rotate(this.ship.angle);
     
     // Draw ship using the loaded image
     if (this.shipImageLoaded) {
-      // Add glow effect when thrusting
-      if (this.ship.thrusting) {
-        this.ctx.shadowColor = '#00f2ff';
+      // Add glow effect when moving
+      if (this.ship.thrust?.x !== 0) {
+        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--ship-stroke');
         this.ctx.shadowBlur = 15;
         this.ctx.shadowOffsetX = 0;
         this.ctx.shadowOffsetY = 0;
@@ -430,80 +545,249 @@ export class AsteroidsGame {
       );
     } else {
       // Fallback to drawing a simple triangle if image is not loaded
-      this.ctx.strokeStyle = '#00f2ff';
+      this.ctx.strokeStyle = getComputedStyle(this.canvas).getPropertyValue('--ship-stroke');
       this.ctx.lineWidth = 2;
       this.ctx.beginPath();
-      this.ctx.moveTo(this.ship.radius, 0);
-      this.ctx.lineTo(-this.ship.radius, -this.ship.radius / 2);
+      this.ctx.moveTo(0, -this.ship.radius);
       this.ctx.lineTo(-this.ship.radius, this.ship.radius / 2);
+      this.ctx.lineTo(this.ship.radius, this.ship.radius / 2);
       this.ctx.closePath();
       this.ctx.stroke();
-      
-      // Draw thrust if thrusting (only for fallback triangle)
-      if (this.ship.thrusting) {
-        this.ctx.beginPath();
-        this.ctx.moveTo(-this.ship.radius, 0);
-        this.ctx.lineTo(-this.ship.radius - 10, 0);
-        this.ctx.strokeStyle = '#ff4081';
-        this.ctx.stroke();
-      }
     }
     
     this.ctx.restore();
   }
   
+  /**
+   * Draw bullets
+   */
   drawBullets() {
-    this.ctx.fillStyle = '#ff4081';
-    
     this.bullets.forEach(bullet => {
-      this.ctx.beginPath();
-      this.ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
-      this.ctx.fill();
+      if (this.bulletImageLoaded) {
+        // Save context state
+        this.ctx.save();
+        
+        // Set up shadow for glow effect
+        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--bullet-glow');
+        this.ctx.shadowBlur = parseInt(getComputedStyle(this.canvas).getPropertyValue('--bullet-shadow-blur')) || 10;
+        
+        // Calculate bullet dimensions - now twice as large
+        const bulletWidth = bullet.radius * 8;   // Width perpendicular to motion (doubled)
+        const bulletHeight = bullet.radius * 16; // Height in direction of motion (doubled)
+        
+        // Translate to bullet position
+        this.ctx.translate(bullet.x, bullet.y);
+        
+        // Rotate 90 degrees counterclockwise to make it point upward
+        this.ctx.rotate(-Math.PI / 2);
+        
+        // Draw bullet image - centered on bullet position
+        this.ctx.drawImage(
+          this.bulletImage,
+          -bulletWidth / 2,
+          -bulletHeight / 2,
+          bulletWidth,
+          bulletHeight
+        );
+        
+        // Restore context
+        this.ctx.restore();
+      } else {
+        // Fallback to drawing a circle if image is not loaded
+        this.ctx.save();
+        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--bullet-fill');
+        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--bullet-glow');
+        this.ctx.shadowBlur = parseInt(getComputedStyle(this.canvas).getPropertyValue('--bullet-shadow-blur')) || 10;
+        
+        this.ctx.beginPath();
+        this.ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.ctx.restore();
+      }
     });
   }
   
+  /**
+   * Draw asteroids
+   */
   drawAsteroids() {
-    this.ctx.strokeStyle = '#00f2ff';
-    this.ctx.lineWidth = 2;
-    
     this.asteroids.forEach(asteroid => {
-      this.ctx.beginPath();
+      if (this.asteroidImageLoaded) {
+        // Update asteroid rotation
+        asteroid.rotation += asteroid.rotationSpeed;
+        
+        // Draw the asteroid image
+        this.ctx.save();
+        this.ctx.translate(asteroid.x, asteroid.y);
+        
+        // Use the asteroid's rotation property
+        this.ctx.rotate(asteroid.rotation);
+        
+        // Draw the asteroid image centered on the asteroid's position
+        this.ctx.drawImage(
+          this.asteroidImage, 
+          -asteroid.radius, 
+          -asteroid.radius, 
+          asteroid.radius * 2, 
+          asteroid.radius * 2
+        );
+        
+        this.ctx.restore();
+      } else {
+        // Fallback to drawing a circle if image is not loaded
+        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--asteroid-fill');
+        this.ctx.beginPath();
+        this.ctx.arc(asteroid.x, asteroid.y, asteroid.radius, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Add a glow effect
+        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--asteroid-fill');
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+      }
+    });
+  }
+  
+  /**
+   * Draw hearts (lives)
+   */
+  drawHearts() {
+    // Heart display settings
+    const heartSize = 25; // Larger hearts
+    const spacing = 8; // Less spacing between hearts
+    const padding = 10; // Padding from the canvas edge
+    
+    this.ctx.save();
+    this.ctx.font = `${heartSize}px Arial`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    
+    // Heart animation when hit
+    const timeSinceHit = Date.now() - this.heartBlinkTime;
+    const isAnimatingHit = timeSinceHit < 1000; // 1 second animation
+    
+    // Draw lives as hearts from right to left
+    for (let i = 0; i < this.lives; i++) {
+      // Position hearts from right to left
+      const x = this.width - padding - (heartSize/2) - (i * (heartSize + spacing));
+      const y = padding + heartSize/2;
       
-      // Draw a jagged circle for the asteroid
-      for (let i = 0; i < asteroid.vertices; i++) {
-        const angle = (i / asteroid.vertices) * Math.PI * 2;
-        const jitter = 1 - (Math.random() * asteroid.jaggedness);
-        const radius = asteroid.radius * jitter;
+      this.ctx.save();
+      
+      // Check if we're animating the last heart
+      if (isAnimatingHit && i === this.lives - 1) {
+        // Animate the last heart (pulsing effect)
+        const pulseScale = 1 + Math.sin(timeSinceHit / 50) * 0.3;
+        this.ctx.translate(x, y);
+        this.ctx.scale(pulseScale, pulseScale);
+        this.ctx.translate(-x, -y);
         
-        const x = asteroid.x + Math.cos(angle + asteroid.angle) * radius;
-        const y = asteroid.y + Math.sin(angle + asteroid.angle) * radius;
-        
-        if (i === 0) {
-          this.ctx.moveTo(x, y);
-        } else {
-          this.ctx.lineTo(x, y);
-        }
+        // Change color based on animation phase
+        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--heart-hit-fill');
+        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--heart-hit-fill');
+      } else {
+        // Normal heart
+        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--heart-fill');
+        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--heart-fill');
       }
       
-      this.ctx.closePath();
-      this.ctx.stroke();
-    });
+      // Add stronger glow effect
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowOffsetX = 0;
+      this.ctx.shadowOffsetY = 0;
+      
+      // Draw heart emoji
+      this.ctx.fillText('❤', x, y);
+      
+      this.ctx.restore();
+    }
+    
+    this.ctx.restore();
   }
   
-  // Control methods
-  rotate(direction) {
-    const rotationSpeed = 0.1;
-    this.ship.rotation = direction * rotationSpeed;
+  /**
+   * Draw pause overlay
+   */
+  drawPauseOverlay() {
+    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-bg');
+    this.ctx.fillRect(0, 0, this.width, this.height);
+    
+    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.font = 'bold 30px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.shadowBlur = 10;
+    this.ctx.fillText('PAUSED', this.width / 2, this.height / 2);
   }
   
-  thrust(isThrusting) {
-    this.ship.thrusting = isThrusting;
+  /**
+   * Draw start screen overlay
+   */
+  drawStartScreenOverlay() {
+    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-bg');
+    this.ctx.fillRect(0, 0, this.width, this.height);
+    
+    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.font = 'bold 30px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.shadowBlur = 10;
+    this.ctx.fillText('PRESS START', this.width / 2, this.height / 2);
+  }
+  
+  // ===== CONTROL METHODS =====
+  
+  /**
+   * Move ship left
+   */
+  moveLeft() {
+    this.ship.thrust = { x: -this.ship.speed, y: 0 };
+  }
+  
+  /**
+   * Move ship right
+   */
+  moveRight() {
+    this.ship.thrust = { x: this.ship.speed, y: 0 };
+  }
+  
+  /**
+   * Stop ship movement
+   */
+  stopMoving() {
+    this.ship.thrust = { x: 0, y: 0 };
   }
 }
 
-// Initialize the game when DOM is loaded
+// ===== GAME INITIALIZATION =====
+
+/**
+ * Initialize the game when DOM is loaded
+ */
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize game instance
   const game = new AsteroidsGame('game-board');
+  
+  // Handle window resize to keep canvas properly sized
+  window.addEventListener('resize', () => {
+    const container = game.canvas.parentElement;
+    game.canvas.width = container.clientWidth;
+    game.canvas.height = container.clientHeight;
+    game.width = game.canvas.width;
+    game.height = game.canvas.height;
+    
+    // Update ship position based on new dimensions
+    game.ship.x = Math.min(game.ship.x, game.width - game.ship.width/2);
+    game.ship.y = game.height - 60;
+    
+    game.draw(); // Redraw game
+  });
+  
+  // Get DOM elements
   const startButton = document.getElementById('start-button');
   const pauseButton = document.getElementById('pause-button');
   const restartButton = document.getElementById('restart-button');
@@ -511,72 +795,161 @@ document.addEventListener('DOMContentLoaded', () => {
   const finalScore = document.getElementById('final-score');
   const scoreDisplay = document.getElementById('score');
   const bestScoreDisplay = document.getElementById('best-score');
-  const livesDisplay = document.getElementById('lives');
 
   // Mobile controls
   const leftButton = document.getElementById('left-button');
   const rightButton = document.getElementById('right-button');
-  const thrustButton = document.getElementById('thrust-button');
   const fireButton = document.getElementById('fire-button');
 
+  /**
+   * Update score display
+   */
   function updateScore() {
     scoreDisplay.textContent = game.score;
     bestScoreDisplay.textContent = game.scores.bestScore;
-    livesDisplay.textContent = game.lives;
   }
+  
+  // Set up game callbacks
+  game.onScoreUpdate = updateScore;
+  
+  game.onGameStart = () => {
+    startButton.textContent = 'Restart';
+    pauseButton.disabled = false;
+  };
+  
+  game.onGamePause = () => {
+    pauseButton.textContent = 'Resume';
+    startButton.textContent = 'Restart';
+  };
+  
+  game.onGameResume = () => {
+    pauseButton.textContent = 'Pause';
+  };
+  
+  game.onGameReset = () => {
+    startButton.textContent = 'Start Game';
+    pauseButton.textContent = 'Pause';
+    pauseButton.disabled = true;
+  };
+  
+  game.onGameOver = (score) => {
+    finalScore.textContent = score;
+    gameOver.classList.add('visible');
+    startButton.textContent = 'Start Game';
+    pauseButton.disabled = true;
+    updateScore();
+  };
 
+  // Button event listeners
   startButton.addEventListener('click', () => {
-    game.start();
-    startButton.disabled = true;
+    if (game.isPaused) {
+      // If game is paused, act as a restart button
+      game.reset();
+      game.start();
+    } else if (game.showStartScreen || game.isGameOver) {
+      // Normal start functionality
+      game.start();
+    } else {
+      // If game is running, act as a restart button
+      game.reset();
+      game.start();
+    }
   });
 
   pauseButton.addEventListener('click', () => {
-    if (game.isPaused) {
-      game.resume();
-      pauseButton.textContent = 'Pause';
-    } else {
-      game.pause();
-      pauseButton.textContent = 'Resume';
+    if (game.gameLoop) { // Only allow pausing when the game is running
+      if (game.isPaused) {
+        game.resume();
+      } else {
+        game.pause();
+      }
     }
   });
 
   restartButton.addEventListener('click', () => {
     game.reset();
     gameOver.classList.remove('visible');
-    startButton.disabled = false;
-    pauseButton.textContent = 'Pause';
     updateScore();
   });
 
-  // Mobile controls
-  leftButton.addEventListener('mousedown', () => game.rotate(1));
-  leftButton.addEventListener('mouseup', () => game.rotate(0));
-  leftButton.addEventListener('touchstart', () => game.rotate(1));
-  leftButton.addEventListener('touchend', () => game.rotate(0));
+  // Mobile control event listeners
+  leftButton.addEventListener('mousedown', (e) => {
+    e.preventDefault(); // Prevent default behavior
+    game.moveLeft();
+  });
+  leftButton.addEventListener('mouseup', (e) => {
+    e.preventDefault(); 
+    game.stopMoving();
+  });
+  leftButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    game.moveLeft();
+  });
+  leftButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    game.stopMoving();
+  });
 
-  rightButton.addEventListener('mousedown', () => game.rotate(-1));
-  rightButton.addEventListener('mouseup', () => game.rotate(0));
-  rightButton.addEventListener('touchstart', () => game.rotate(-1));
-  rightButton.addEventListener('touchend', () => game.rotate(0));
+  rightButton.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    game.moveRight();
+  });
+  rightButton.addEventListener('mouseup', (e) => {
+    e.preventDefault();
+    game.stopMoving();
+  });
+  rightButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    game.moveRight();
+  });
+  rightButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    game.stopMoving();
+  });
 
-  thrustButton.addEventListener('mousedown', () => game.thrust(true));
-  thrustButton.addEventListener('mouseup', () => game.thrust(false));
-  thrustButton.addEventListener('touchstart', () => game.thrust(true));
-  thrustButton.addEventListener('touchend', () => game.thrust(false));
+  fireButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // Stop the event from bubbling up
+    if (!game.showStartScreen && !game.isGameOver && game.gameLoop) {
+      game.shoot();
+    }
+  });
+  
+  // Make sure the fire button doesn't trigger any other events
+  fireButton.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  
+  fireButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
 
-  fireButton.addEventListener('click', () => game.shoot());
-
-  // Keyboard controls
+  // Keyboard control event listeners
   document.addEventListener('keydown', (e) => {
+    // Prevent default behavior for game controls
+    if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+      e.preventDefault();
+    }
+    
+    if (game.showStartScreen && e.key === ' ') {
+      // Start the game when pressing space on the start screen
+      game.start();
+      return;
+    }
+    
+    // Only process controls if the game is running and not paused or over
+    if (!game.gameLoop || game.isPaused || game.isGameOver) {
+      return;
+    }
+    
     switch(e.key) {
       case 'ArrowLeft':
-        game.rotate(1);
+        game.moveLeft();
         break;
       case 'ArrowRight':
-        game.rotate(-1);
-        break;
-      case 'ArrowUp':
-        game.thrust(true);
+        game.moveRight();
         break;
       case ' ':
         game.shoot();
@@ -585,28 +958,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.addEventListener('keyup', (e) => {
+    // Prevent default behavior for game controls
+    if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+    }
+    
+    if (!game.gameLoop || game.isPaused || game.isGameOver) {
+      return;
+    }
+    
     switch(e.key) {
       case 'ArrowLeft':
       case 'ArrowRight':
-        game.rotate(0);
-        break;
-      case 'ArrowUp':
-        game.thrust(false);
+        game.stopMoving();
         break;
     }
   });
 
-  // Game over handler
-  game.onGameOver = (score) => {
-    finalScore.textContent = score;
-    gameOver.classList.add('visible');
-    startButton.disabled = false;
-    updateScore();
-  };
-
-  // Score update handler
-  game.onScoreUpdate = updateScore;
-
-  // Initialize the game
+  // Initialize the game display
   updateScore();
 });
