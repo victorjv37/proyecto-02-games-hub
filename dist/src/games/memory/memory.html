@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game - Games Hub</title>
+  <script type="module" crossorigin src="/assets/memory-CQSeeGfZ.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/main-DHHuibfa.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-2PlqqRrs.css">
+  <link rel="stylesheet" crossorigin href="/assets/memory-DySM-pip.css">
+</head>
+<body class="game-page">
+    <div class="app-wrapper">
+        <header class="fixed-header">
+            <h1>Memory Game</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/src/games/tictactoe/tictactoe.html">Tic Tac Toe</a></li>
+                    <li><a href="/src/games/memory/memory.html" class="active">Memory Game</a></li>
+                    <li><a href="/src/games/snake/snake.html">Snake</a></li>
+                    <li><a href="/src/games/asteroids/asteroids.html">Asteroids</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="content-container">
+            <main class="game-container">
+                <div class="game-stats">
+                    <div class="stat-card">
+                        <h3>Moves</h3>
+                        <p id="moves">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Best Score</h3>
+                        <p id="best-score">-</p>
+                    </div>
+                </div>
+
+                <div class="cards-grid" id="cards-grid"></div>
+                <div id="win-message" class="win-message"></div>
+                <button class="reset-button" id="reset-button">Reset Game</button>
+            </main>
+        </div>
+    </div>
+
+</body>
+</html> 

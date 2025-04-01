@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - Games Hub</title>
+  <script type="module" crossorigin src="/assets/snake--QT2VAKB.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/main-DHHuibfa.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-2PlqqRrs.css">
+  <link rel="stylesheet" crossorigin href="/assets/snake-CoF11zUm.css">
+</head>
+<body class="game-page">
+    <div class="app-wrapper">
+        <header class="fixed-header">
+            <h1>Snake</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/src/games/tictactoe/tictactoe.html">Tic Tac Toe</a></li>
+                    <li><a href="/src/games/memory/memory.html">Memory Game</a></li>
+                    <li><a href="/src/games/snake/snake.html" class="active">Snake</a></li>
+                    <li><a href="/src/games/asteroids/asteroids.html">Asteroids</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="content-container">
+            <main class="game-container">
+                <div class="game-stats">
+                    <div class="stat-card">
+                        <h3>Score</h3>
+                        <p id="score">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Best Score</h3>
+                        <p id="best-score">0</p>
+                    </div>
+                </div>
+
+                <canvas id="game-board" class="game-board" width="350" height="350"></canvas>
+                
+                <div class="controls">
+                    <button class="control-button" id="start-button">Start Game</button>
+                    <button class="control-button" id="pause-button">Pause</button>
+                </div>
+
+                <div class="mobile-controls">
+                    <button class="control-button" id="left-button">←</button>
+                    <button class="control-button" id="up-button">↑</button>
+                    <button class="control-button" id="right-button">→</button>
+                    <button class="control-button" id="down-button">↓</button>
+                </div>
+
+                <div class="game-over" id="game-over">
+                    <h2>Game Over!</h2>
+                    <p>Your score: <span id="final-score">0</span></p>
+                    <button class="control-button" id="restart-button">Play Again</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+</body>
+</html> 

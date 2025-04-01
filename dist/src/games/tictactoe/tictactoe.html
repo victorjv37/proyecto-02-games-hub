@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Games Hub</title>
+  <script type="module" crossorigin src="/assets/tictactoe-DNM3NroX.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/main-DHHuibfa.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-2PlqqRrs.css">
+  <link rel="stylesheet" crossorigin href="/assets/tictactoe-BNYbESyj.css">
+</head>
+<body class="game-page">
+    <div class="app-wrapper">
+        <header class="fixed-header">
+            <h1>Tic Tac Toe</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/src/games/tictactoe/tictactoe.html" class="active">Tic Tac Toe</a></li>
+                    <li><a href="/src/games/memory/memory.html">Memory Game</a></li>
+                    <li><a href="/src/games/snake/snake.html">Snake</a></li>
+                    <li><a href="/src/games/asteroids/asteroids.html">Asteroids</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="content-container">
+            <main class="game-container">
+                <div class="score">
+                    <div class="score-card">
+                        <h3>Player X</h3>
+                        <p id="score-x">0</p>
+                    </div>
+                    <div class="score-card">
+                        <h3>Player O</h3>
+                        <p id="score-o">0</p>
+                    </div>
+                </div>
+
+                <div class="game-board" id="board"></div>
+                <div id="winner-message" class="win-message"></div>
+                <button class="reset-button" id="reset-button">Reset Game</button>
+            </main>
+        </div>
+    </div>
+
+</body>
+</html> 

@@ -8,8 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
+# dist  # Comentamos esta línea para permitir el seguimiento de la carpeta dist
+# dist-ssr
 *.local
 
 # Editor directories and files
