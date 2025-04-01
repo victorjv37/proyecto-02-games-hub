@@ -15,6 +15,13 @@ export class AsteroidsGame {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
     
+    // Adjust margin for mobile screens
+    if (window.innerWidth <= 768) {
+        this.canvas.style.margin = '0';
+    } else {
+        this.canvas.style.margin = '0.4rem auto';
+    }
+    
     // Background elements
     this.activeBackground = document.getElementById('active-background');
     this.pausedBackground = document.getElementById('paused-background');
@@ -31,6 +38,9 @@ export class AsteroidsGame {
     this.showStartScreen = true;
     this.heartBlinkTime = 0;
     
+    // Check for small screens
+    this.isSmallScreen = window.innerWidth <= 350;
+    
     // Callbacks for external UI updates
     this.onScoreUpdate = null;
     this.onGameOver = null;
@@ -42,13 +52,13 @@ export class AsteroidsGame {
     // Load game assets
     this.loadImages();
     
-    // Ship properties - faster speed for easier control
+    // Ship properties - adjusted based on screen size
     this.ship = {
       x: this.width / 2,
       y: this.height - 60,
-      radius: 15,
-      width: 40,
-      height: 40,
+      radius: this.isSmallScreen ? 12 : 15,
+      width: this.isSmallScreen ? 30 : 40,
+      height: this.isSmallScreen ? 30 : 40,
       invulnerable: false,
       speed: 7
     };
@@ -190,9 +200,9 @@ export class AsteroidsGame {
     this.ship = {
       x: this.width / 2,
       y: this.height - 60,
-      radius: 15,
-      width: 40,
-      height: 40,
+      radius: this.isSmallScreen ? 12 : 15,
+      width: this.isSmallScreen ? 30 : 40,
+      height: this.isSmallScreen ? 30 : 40,
       invulnerable: false,
       speed: 7 // Faster speed consistent with constructor
     };
@@ -251,11 +261,12 @@ export class AsteroidsGame {
    * @param {string} size - Size of asteroid ('large', 'medium', 'small')
    */
   createAsteroid(x, y, size = 'large') {
-    // Define asteroid sizes and scores
+    // Define asteroid sizes and scores, with adjustments for small screens
+    const sizeScaleFactor = this.isSmallScreen ? 0.75 : 1;
     const sizes = {
-      large: { radius: 25, score: 20 },
-      medium: { radius: 15, score: 50 },
-      small: { radius: 8, score: 100 }
+      large: { radius: 25 * sizeScaleFactor, score: 20 },
+      medium: { radius: 15 * sizeScaleFactor, score: 50 },
+      small: { radius: 8 * sizeScaleFactor, score: 100 }
     };
     
     // Random position if not specified
@@ -264,7 +275,7 @@ export class AsteroidsGame {
     
     if (posX === undefined || posY === undefined) {
       // Make sure asteroids don't spawn too close to the ship
-      const safeDistance = 100;
+      const safeDistance = this.isSmallScreen ? 80 : 100;
       let validPos = false;
       
       while (!validPos) {
@@ -279,17 +290,20 @@ export class AsteroidsGame {
       }
     }
     
+    // Velocidad reducida para pantallas pequeñas (móviles)
+    const speedFactor = this.isSmallScreen ? 0.6 : 1;
+    
     // Create the asteroid with slower downward movement
     this.asteroids.push({
       x: posX,
       y: posY,
-      xVelocity: (Math.random() * 2 - 1) * 1.2, // Reduced horizontal movement
-      yVelocity: 1 + Math.random() * 1.5 + (this.level - 1) * 0.3, // Reduced speed, slower level scaling
+      xVelocity: (Math.random() * 2 - 1) * 1.2 * speedFactor, // Reduced horizontal movement for small screens
+      yVelocity: (1 + Math.random() * 1.5 + (this.level - 1) * 0.3) * speedFactor, // Reduced speed for small screens
       radius: sizes[size].radius,
       size: size,
       scoreValue: sizes[size].score,
       rotation: Math.random() * Math.PI * 2, // Random initial rotation
-      rotationSpeed: (Math.random() * 0.1 - 0.05) // Random rotation speed
+      rotationSpeed: (Math.random() * 0.1 - 0.05) * speedFactor // Reduced rotation speed for small screens
     });
   }
   
@@ -307,7 +321,7 @@ export class AsteroidsGame {
       y: this.ship.y - this.ship.height/2,
       xVelocity: 0,
       yVelocity: -12, // Even faster bullet speed
-      radius: 6, // Increased size to match the larger visual
+      radius: this.isSmallScreen ? 4 : 6, // Adjusted bullet size for small screens
       lifespan: 60
     });
   }
@@ -571,9 +585,10 @@ export class AsteroidsGame {
         this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--bullet-glow');
         this.ctx.shadowBlur = parseInt(getComputedStyle(this.canvas).getPropertyValue('--bullet-shadow-blur')) || 10;
         
-        // Calculate bullet dimensions - now twice as large
-        const bulletWidth = bullet.radius * 8;   // Width perpendicular to motion (doubled)
-        const bulletHeight = bullet.radius * 16; // Height in direction of motion (doubled)
+        // Calculate bullet dimensions - adjusted for screen size
+        const sizeMultiplier = this.isSmallScreen ? 6 : 8;
+        const bulletWidth = bullet.radius * sizeMultiplier;   // Width perpendicular to motion
+        const bulletHeight = bullet.radius * (sizeMultiplier * 2); // Height in direction of motion
         
         // Translate to bullet position
         this.ctx.translate(bullet.x, bullet.y);
@@ -654,10 +669,10 @@ export class AsteroidsGame {
    * Draw hearts (lives)
    */
   drawHearts() {
-    // Heart display settings
-    const heartSize = 25; // Larger hearts
-    const spacing = 8; // Less spacing between hearts
-    const padding = 10; // Padding from the canvas edge
+    // Heart display settings - adjust for small screens
+    const heartSize = this.isSmallScreen ? 20 : 25; // Smaller hearts on small screens
+    const spacing = this.isSmallScreen ? 5 : 8; // Less spacing between hearts on small screens
+    const padding = this.isSmallScreen ? 5 : 10; // Less padding on small screens
     
     this.ctx.save();
     this.ctx.font = `${heartSize}px Arial`;
@@ -715,7 +730,7 @@ export class AsteroidsGame {
     this.ctx.fillRect(0, 0, this.width, this.height);
     
     this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
-    this.ctx.font = 'bold 30px Arial';
+    this.ctx.font = `bold ${this.isSmallScreen ? '24px' : '30px'} Arial`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
@@ -731,7 +746,7 @@ export class AsteroidsGame {
     this.ctx.fillRect(0, 0, this.width, this.height);
     
     this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
-    this.ctx.font = 'bold 30px Arial';
+    this.ctx.font = `bold ${this.isSmallScreen ? '24px' : '30px'} Arial`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
@@ -779,6 +794,21 @@ document.addEventListener('DOMContentLoaded', () => {
     game.canvas.height = container.clientHeight;
     game.width = game.canvas.width;
     game.height = game.canvas.height;
+    
+    // Update small screen flag
+    game.isSmallScreen = window.innerWidth <= 350;
+    
+    // Update ship size based on screen size
+    game.ship.radius = game.isSmallScreen ? 12 : 15;
+    game.ship.width = game.isSmallScreen ? 30 : 40;
+    game.ship.height = game.isSmallScreen ? 30 : 40;
+    
+    // Adjust margin for mobile screens
+    if (window.innerWidth <= 768) {
+        game.canvas.style.margin = '0';
+    } else {
+        game.canvas.style.margin = '0.4rem auto';
+    }
     
     // Update ship position based on new dimensions
     game.ship.x = Math.min(game.ship.x, game.width - game.ship.width/2);
@@ -919,11 +949,19 @@ document.addEventListener('DOMContentLoaded', () => {
   fireButton.addEventListener('mousedown', (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Dispara al presionar el botón
+    if (!game.showStartScreen && !game.isGameOver && game.gameLoop) {
+      game.shoot();
+    }
   });
   
   fireButton.addEventListener('touchstart', (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Dispara con el evento táctil
+    if (!game.showStartScreen && !game.isGameOver && game.gameLoop) {
+      game.shoot();
+    }
   });
 
   // Keyboard control event listeners

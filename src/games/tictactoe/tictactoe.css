@@ -7,16 +7,16 @@
 .game-board {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 4px;
     margin: 0.5rem auto;
-    max-width: 400px;
+    max-width: 350px;
     width: 100%;
     aspect-ratio: 1;
     position: relative;
     background-color: var(--card-background);
-    padding: 10px;
+    padding: 8px;
     border-radius: 0;
-    border: 3px solid var(--accent-color);
+    border: 2px solid var(--accent-color);
     box-shadow: 0 0 15px rgba(0, 242, 255, 0.151);
     image-rendering: pixelated;
 }
@@ -29,7 +29,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-family: var(--retro-font);
     cursor: pointer;
     transition: all 0.3s ease;
@@ -55,15 +55,15 @@
 
 .game-info {
     margin: 0.5rem 0;
-    padding: 0.6rem;
+    padding: 0.4rem;
     background: var(--card-background);
     border-radius: 0;
-    border: 3px solid var(--accent-color);
+    border: 2px solid var(--accent-color);
 }
 
 .status {
-    font-size: 0.9rem;
-    margin-bottom: 0.6rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
     color: var(--text-color);
 }
 
@@ -96,12 +96,12 @@
     background: var(--primary-color);
     color: white;
     border: 2px solid white;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 0;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     font-family: var(--retro-font);
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -114,8 +114,8 @@
 }
 
 .win-message {
-    font-size: 0.9rem;
-    margin: 0.5rem 0;
+    font-size: 0.8rem;
+    margin: 0.4rem 0;
     color: var(--accent-color);
     text-shadow: 0 0 10px var(--accent-color);
     font-weight: bold;
@@ -133,22 +133,46 @@
 
 @media (max-width: 600px) {
     .game-board {
-        max-width: 300px;
+        max-width: 280px;
+        padding: 6px;
+        gap: 3px;
     }
 
     .cell {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
     }
 
     .score {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.8rem;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    .score-card {
+        min-width: 80px;
+        padding: 0.4rem;
     }
 }
 
 @media (max-width: 350px) {
     .game-board {
-        max-width: 250px;
+        max-width: 240px;
+        padding: 5px;
+    }
+
+    .cell {
+        font-size: 1.3rem;
+    }
+
+    .score {
+        gap: 0.8rem;
+    }
+
+    .score-card {
+        min-width: 70px;
+        padding: 0.3rem;
+    }
+
+    .score-card h3 {
+        font-size: 0.7rem;
     }
 } 

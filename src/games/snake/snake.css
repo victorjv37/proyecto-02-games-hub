@@ -1,5 +1,5 @@
 .game-container {
-    max-width: 600px;
+    max-width: 500px;
     margin: 0.5rem auto;
     text-align: center;
 }
@@ -31,12 +31,12 @@
 
 .game-board {
     background: rgba(5, 7, 36, 0.9);
-    border: 3px solid var(--accent-color);
+    border: 2px solid var(--accent-color);
     border-radius: 0;
     margin: 0.5rem auto;
     position: relative;
     box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-    max-width: 400px;
+    max-width: 350px;
     width: 100%;
     aspect-ratio: 1;
     image-rendering: pixelated;
@@ -45,17 +45,17 @@
 .controls {
     display: flex;
     justify-content: center;
-    gap: 0.8rem;
-    margin: 0.5rem 0;
+    gap: 0.6rem;
+    margin: 0.4rem 0;
 }
 
 .control-button {
     background: var(--primary-color);
     color: white;
     border: 2px solid white;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 0;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: var(--retro-font);
@@ -76,12 +76,12 @@
     transform: translate(-50%, -50%);
     background: rgba(3, 5, 24, 0.95);
     color: white;
-    padding: 1.2rem;
+    padding: 1rem;
     border-radius: 0;
     text-align: center;
     display: none;
     z-index: 10;
-    border: 3px solid var(--primary-color);
+    border: 2px solid var(--primary-color);
     box-shadow: var(--primary-shadow);
     font-family: var(--retro-font);
 }
@@ -92,9 +92,9 @@
 
 .game-over h2 {
     color: var(--primary-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     text-shadow: 0 0 10px var(--primary-color);
-    font-size: 1.1rem;
+    font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -102,19 +102,19 @@
 .mobile-controls {
     display: none;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.3rem;
-    margin: 0.5rem auto;
-    max-width: 160px;
+    gap: 0.2rem;
+    margin: 0.4rem auto;
+    max-width: 140px;
 }
 
 .mobile-controls button {
     aspect-ratio: 1;
-    font-size: 1rem;
+    font-size: 0.9rem;
     padding: 0;
     background: var(--card-background);
     border: 2px solid var(--accent-color);
-    border-radius: 0;
     color: var(--accent-color);
+    border-radius: 0;
     font-family: var(--retro-font);
 }
 
@@ -144,19 +144,19 @@
 }
 
 @media (max-width: 600px) {
-    .mobile-controls {
-        display: grid;
-    }
-
     .game-board {
-        max-width: 300px;
+        max-width: 280px;
         height: auto;
     }
 
     .game-stats {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.8rem;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    .stat-card {
+        min-width: 80px;
+        padding: 0.4rem;
     }
 
     .controls {
@@ -164,10 +164,39 @@
         align-items: center;
         gap: 0.5rem;
     }
+
+    .game-over {
+        padding: 0.8rem;
+    }
+
+    .game-over h2 {
+        font-size: 0.9rem;
+    }
 }
 
 @media (max-width: 350px) {
     .game-board {
-        max-width: 250px;
+        max-width: 240px;
+    }
+
+    .game-stats {
+        gap: 0.8rem;
+    }
+
+    .stat-card {
+        min-width: 70px;
+        padding: 0.3rem;
+    }
+
+    .stat-card h3 {
+        font-size: 0.7rem;
+    }
+
+    .mobile-controls {
+        max-width: 120px;
+    }
+
+    .mobile-controls button {
+        font-size: 0.8rem;
     }
 } 
