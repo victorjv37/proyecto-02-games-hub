@@ -35,18 +35,12 @@
                     </div>
                 </div>
 
+                <p id="swipe-instruction" class="swipe-instruction">Desliza el dedo para mover</p>
                 <canvas id="game-board" class="game-board" width="350" height="350"></canvas>
                 
                 <div class="controls">
                     <button class="control-button" id="start-button">Start Game</button>
                     <button class="control-button" id="pause-button">Pause</button>
-                </div>
-
-                <div class="mobile-controls">
-                    <button class="control-button" id="left-button">←</button>
-                    <button class="control-button" id="up-button">↑</button>
-                    <button class="control-button" id="right-button">→</button>
-                    <button class="control-button" id="down-button">↓</button>
                 </div>
 
                 <div class="game-over" id="game-over">
@@ -69,12 +63,14 @@
         const finalScore = document.getElementById('final-score');
         const scoreDisplay = document.getElementById('score');
         const bestScoreDisplay = document.getElementById('best-score');
+        const gameBoard = document.getElementById('game-board');
+        const swipeInstruction = document.getElementById('swipe-instruction');
 
-        // Mobile controls
-        const leftButton = document.getElementById('left-button');
-        const rightButton = document.getElementById('right-button');
-        const upButton = document.getElementById('up-button');
-        const downButton = document.getElementById('down-button');
+        // Detectar si estamos en móvil o no
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (!isMobile) {
+            swipeInstruction.style.display = 'none';
+        }
 
         function updateScore() {
             scoreDisplay.textContent = game.score;
@@ -103,11 +99,53 @@
             pauseButton.textContent = 'Pause';
         });
 
-        // Mobile controls
-        leftButton.addEventListener('click', () => game.changeDirection('left'));
-        rightButton.addEventListener('click', () => game.changeDirection('right'));
-        upButton.addEventListener('click', () => game.changeDirection('up'));
-        downButton.addEventListener('click', () => game.changeDirection('down'));
+        // Swipe detection
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        let minSwipeDistance = 20; // Menor distancia para considerar un swipe
+
+        gameBoard.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, false);
+
+        gameBoard.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevenir scroll
+        }, { passive: false });
+
+        gameBoard.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, false);
+
+        function handleSwipe() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            
+            // Determinar si el swipe fue horizontal o vertical
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Swipe horizontal
+                if (Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) {
+                        game.changeDirection('right');
+                    } else {
+                        game.changeDirection('left');
+                    }
+                }
+            } else {
+                // Swipe vertical
+                if (Math.abs(deltaY) > minSwipeDistance) {
+                    if (deltaY > 0) {
+                        game.changeDirection('down');
+                    } else {
+                        game.changeDirection('up');
+                    }
+                }
+            }
+        }
 
         // Keyboard controls
         document.addEventListener('keydown', (e) => {

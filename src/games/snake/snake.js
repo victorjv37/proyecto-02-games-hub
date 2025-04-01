@@ -7,6 +7,11 @@ export class SnakeGame {
     
     this.reset();
     this.loadScores();
+    
+    // Prevenir el comportamiento de scroll por defecto en el canvas
+    this.canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
   }
 
   reset() {
@@ -22,6 +27,7 @@ export class SnakeGame {
     this.gameLoop = null;
     this.isPaused = false;
     this.isGameOver = false;
+    this.lastDirectionChange = Date.now();
   }
 
   loadScores() {
@@ -136,8 +142,15 @@ export class SnakeGame {
       'right': 'left'
     };
 
+    // Limitar la frecuencia de cambio de dirección a 100ms para evitar giros de 180 grados accidentales
+    const now = Date.now();
+    if (now - this.lastDirectionChange < 100) {
+      return;
+    }
+    
     if (opposites[newDirection] !== this.direction) {
       this.nextDirection = newDirection;
+      this.lastDirectionChange = now;
     }
   }
 
