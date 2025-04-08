@@ -1,4 +1,5 @@
-export class MemoryGame {
+// Memory game logic component
+export class MemoryLogic {
   constructor() {
     this.cards = [];
     this.flippedCards = [];
@@ -6,6 +7,12 @@ export class MemoryGame {
     this.moves = 0;
     this.gameActive = true;
     this.scores = JSON.parse(localStorage.getItem('memoryScores')) || { bestMoves: Infinity };
+    
+    // Event callbacks
+    this.onCardUpdate = null;
+    this.onScoreUpdate = null;
+    this.onGameWin = null;
+    
     this.initializeCards();
   }
 
@@ -29,6 +36,11 @@ export class MemoryGame {
         isFlipped: false,
         isMatched: false
       }));
+      
+    // Notify about initial card state
+    if (this.onCardUpdate) {
+      this.onCardUpdate(this.cards);
+    }
   }
 
   flipCard(cardId) {
@@ -40,8 +52,19 @@ export class MemoryGame {
     card.isFlipped = true;
     this.flippedCards.push(card);
     
+    // Notify about card update
+    if (this.onCardUpdate) {
+      this.onCardUpdate(this.cards);
+    }
+    
     if (this.flippedCards.length === 2) {
       this.moves++;
+      
+      // Notify about score update
+      if (this.onScoreUpdate) {
+        this.onScoreUpdate(this.moves, this.scores.bestMoves);
+      }
+      
       return this.checkMatch();
     }
     
@@ -57,20 +80,39 @@ export class MemoryGame {
       card2.isMatched = true;
       this.matchedPairs++;
       
+      // Reset flipped cards
+      this.flippedCards = [];
+      
+      // Notify about card update
+      if (this.onCardUpdate) {
+        this.onCardUpdate(this.cards);
+      }
+      
       if (this.matchedPairs === this.cards.length / 2) {
         this.gameActive = false;
         this.updateScores();
+        
+        // Notify about game win
+        if (this.onGameWin) {
+          this.onGameWin(this.moves);
+        }
+        
         return { status: 'win', moves: this.moves };
       }
       
-      this.flippedCards = [];
       return { status: 'match' };
     }
     
+    // No match - flip back after a delay
     setTimeout(() => {
       card1.isFlipped = false;
       card2.isFlipped = false;
       this.flippedCards = [];
+      
+      // Notify about card update
+      if (this.onCardUpdate) {
+        this.onCardUpdate(this.cards);
+      }
     }, 1000);
     
     return { status: 'no-match' };
@@ -80,15 +122,25 @@ export class MemoryGame {
     if (this.moves < this.scores.bestMoves) {
       this.scores.bestMoves = this.moves;
       localStorage.setItem('memoryScores', JSON.stringify(this.scores));
+      
+      // Notify about score update
+      if (this.onScoreUpdate) {
+        this.onScoreUpdate(this.moves, this.scores.bestMoves);
+      }
     }
   }
 
   resetGame() {
-    this.initializeCards();
     this.flippedCards = [];
     this.matchedPairs = 0;
     this.moves = 0;
     this.gameActive = true;
+    this.initializeCards();
+    
+    // Notify about score update
+    if (this.onScoreUpdate) {
+      this.onScoreUpdate(this.moves, this.scores.bestMoves);
+    }
   }
 
   getScores() {

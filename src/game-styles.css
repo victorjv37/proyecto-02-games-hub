@@ -1,0 +1,5 @@
+/* Game styles imports */
+@import './components/games/TicTacToe/tictactoe.css';
+@import './components/games/Memory/memory.css';
+@import './components/games/Snake/snake.css';
+@import './components/games/Asteroids/asteroids.css'; 

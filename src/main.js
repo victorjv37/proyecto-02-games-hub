@@ -1,4 +1,6 @@
 import './style.css'
+import './game-styles.css'
+import { App } from './App.js'
 
 // Array de GIFs
 const gifs = [
@@ -251,49 +253,21 @@ function createDecorativeGifs() {
   });
 }
 
-// Crear los GIFs decorativos después de que el DOM esté completamente cargado
-document.addEventListener('DOMContentLoaded', function() {
-  createDecorativeGifs();
-});
+// Make the function available globally for pages to use
+window.createDecorativeGifs = createDecorativeGifs;
+window.checkAndRepositionGifs = checkAndRepositionGifs;
 
-// Recrear los GIFs cuando se redimensiona la ventana
-window.addEventListener('resize', function() {
-  // Usar debounce para evitar llamadas excesivas durante el redimensionamiento
-  clearTimeout(window.resizeTimer);
-  window.resizeTimer = setTimeout(function() {
-    createDecorativeGifs();
-  }, 250);
-});
-
-// Handle navigation and recreate GIFs on page change
-document.querySelectorAll('nav a').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    const path = e.target.getAttribute('href');
-    
-    // Update active state in navigation
-    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-    const navLink = document.querySelector(`nav a[href="${path}"]`);
-    if (navLink) navLink.classList.add('active');
-    
-    // Navigate to the selected page
-    window.location.href = path;
-  });
-});
-
-// Make entire game cards clickable
-document.querySelectorAll('.game-card').forEach(card => {
-  card.addEventListener('click', (e) => {
-    // Only handle clicks on the card itself, not on its child elements
-    if (e.target === card) {
-      const playButton = card.querySelector('.play-button');
-      if (playButton) {
-        const gameUrl = playButton.getAttribute('href');
-        if (gameUrl) {
-          window.location.href = gameUrl;
-        }
-      }
-    }
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const app = new App();
+  app.init();
+  
+  // Recreate GIFs on window resize
+  window.addEventListener('resize', () => {
+    clearTimeout(window.resizeTimer);
+    window.resizeTimer = setTimeout(() => {
+      createDecorativeGifs();
+    }, 250);
   });
 });
 
@@ -312,6 +286,3 @@ function checkAndRepositionGifs() {
 
 // Execute repositioning when page is loaded
 document.addEventListener('DOMContentLoaded', checkAndRepositionGifs);
-
-// For single-page app behavior, check if we need to reposition when navigating
-window.addEventListener('popstate', checkAndRepositionGifs);

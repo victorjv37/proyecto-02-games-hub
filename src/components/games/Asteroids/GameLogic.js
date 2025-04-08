@@ -1,13 +1,34 @@
-export class AsteroidsGame {
+// Asteroids game logic component
+export class AsteroidsLogic {
   /**
    * Constructor for the Asteroids game
-   * @param {string} canvasId - ID of the canvas element
+   * @param {HTMLCanvasElement} canvas - Canvas element for the game
    */
-  constructor(canvasId) {
+  constructor(canvas) {
+    if (!canvas) {
+      throw new Error('Canvas element is required');
+    }
+    
     // Canvas setup
-    this.canvas = document.getElementById(canvasId);
+    this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d');
     
+    // Game state initialization
+    this.reset();
+    
+    // Event callbacks
+    this.onScoreUpdate = null;
+    this.onGameOver = null;
+    this.onGameStart = null;
+    this.onGamePause = null;
+    this.onGameResume = null;
+    this.onGameReset = null;
+  }
+  
+  /**
+   * Initialize or reset the game state
+   */
+  reset() {
     // Ensure canvas fills its container
     const container = this.canvas.parentElement;
     this.canvas.width = container.clientWidth;
@@ -17,14 +38,10 @@ export class AsteroidsGame {
     
     // Adjust margin for mobile screens
     if (window.innerWidth <= 768) {
-        this.canvas.style.margin = '0';
+      this.canvas.style.margin = '0';
     } else {
-        this.canvas.style.margin = '0.4rem auto';
+      this.canvas.style.margin = '0.4rem auto';
     }
-    
-    // Background elements
-    this.activeBackground = document.getElementById('active-background');
-    this.pausedBackground = document.getElementById('paused-background');
     
     // Game state initialization
     this.score = 0;
@@ -41,17 +58,6 @@ export class AsteroidsGame {
     // Check for small screens
     this.isSmallScreen = window.innerWidth <= 350;
     
-    // Callbacks for external UI updates
-    this.onScoreUpdate = null;
-    this.onGameOver = null;
-    this.onGameStart = null;
-    this.onGamePause = null;
-    this.onGameResume = null;
-    this.onGameReset = null;
-    
-    // Load game assets
-    this.loadImages();
-    
     // Ship properties - adjusted based on screen size
     this.ship = {
       x: this.width / 2,
@@ -63,12 +69,12 @@ export class AsteroidsGame {
       speed: 7
     };
     
-    // Set initial background state
-    this.updateBackgroundVisibility();
+    this.shipImageLoaded = false;
+    this.asteroidImageLoaded = false;
+    this.bulletImageLoaded = false;
     
-    // Load saved scores and draw initial screen
+    this.loadImages();
     this.loadScores();
-    this.draw();
   }
   
   /**
@@ -78,7 +84,6 @@ export class AsteroidsGame {
     // Ship image
     this.shipImage = new Image();
     this.shipImage.src = 'https://i.gifer.com/origin/a2/a2efb3cf71b7b2a95d8d0c6236f00c88_w200.webp';
-    this.shipImageLoaded = false;
     this.shipImage.onload = () => {
       this.shipImageLoaded = true;
     };
@@ -86,7 +91,6 @@ export class AsteroidsGame {
     // Asteroid image
     this.asteroidImage = new Image();
     this.asteroidImage.src = 'https://images.vexels.com/media/users/3/203033/isolated/preview/bad8b13b449cf80e9cdbf1c355d63f4f-ilustracion-de-gran-asteroide.png';
-    this.asteroidImageLoaded = false;
     this.asteroidImage.onload = () => {
       this.asteroidImageLoaded = true;
     };
@@ -94,30 +98,10 @@ export class AsteroidsGame {
     // Bullet image
     this.bulletImage = new Image();
     this.bulletImage.src = '/—Pngtree—red bullet effect light effect_7150008.png';
-    this.bulletImageLoaded = false;
     this.bulletImage.onload = () => {
       this.bulletImageLoaded = true;
     };
   }
-  
-  /**
-   * Update background visibility based on game state
-   */
-  updateBackgroundVisibility() {
-    if (this.isPaused || this.showStartScreen) {
-      this.activeBackground.classList.add('hidden');
-      this.activeBackground.classList.remove('visible');
-      this.pausedBackground.classList.add('visible');
-      this.pausedBackground.classList.remove('hidden');
-    } else {
-      this.activeBackground.classList.add('visible');
-      this.activeBackground.classList.remove('hidden');
-      this.pausedBackground.classList.add('hidden');
-      this.pausedBackground.classList.remove('visible');
-    }
-  }
-  
-  // ===== GAME STATE MANAGEMENT =====
   
   /**
    * Load player scores from localStorage
@@ -125,6 +109,11 @@ export class AsteroidsGame {
   loadScores() {
     const savedScores = localStorage.getItem('asteroidsScores');
     this.scores = savedScores ? JSON.parse(savedScores) : { bestScore: 0 };
+    
+    // Notify score update
+    if (this.onScoreUpdate) {
+      this.onScoreUpdate(this.score, this.scores.bestScore);
+    }
   }
   
   /**
@@ -142,7 +131,6 @@ export class AsteroidsGame {
       this.showStartScreen = false;
       this.isPaused = false;
       this.isGameOver = false;
-      this.updateBackgroundVisibility();
       this.initializeAsteroids();
       this.gameLoop = setInterval(() => this.update(), 1000 / 60); // 60 FPS
       this.draw();
@@ -159,7 +147,6 @@ export class AsteroidsGame {
    */
   pause() {
     this.isPaused = true;
-    this.updateBackgroundVisibility();
     this.draw();
     
     // Notify UI that game has paused
@@ -173,51 +160,11 @@ export class AsteroidsGame {
    */
   resume() {
     this.isPaused = false;
-    this.updateBackgroundVisibility();
     this.draw();
     
     // Notify UI that game has resumed
     if (this.onGameResume) {
       this.onGameResume();
-    }
-  }
-  
-  /**
-   * Reset the game to initial state
-   */
-  reset() {
-    clearInterval(this.gameLoop);
-    this.gameLoop = null;
-    this.score = 0;
-    this.lives = 3;
-    this.level = 1;
-    this.asteroids = [];
-    this.bullets = [];
-    this.isPaused = false;
-    this.isGameOver = false;
-    this.showStartScreen = true;
-    
-    this.ship = {
-      x: this.width / 2,
-      y: this.height - 60,
-      radius: this.isSmallScreen ? 12 : 15,
-      width: this.isSmallScreen ? 30 : 40,
-      height: this.isSmallScreen ? 30 : 40,
-      invulnerable: false,
-      speed: 7 // Faster speed consistent with constructor
-    };
-    
-    this.updateBackgroundVisibility();
-    this.draw();
-    
-    // Notify UI that game has been reset
-    if (this.onGameReset) {
-      this.onGameReset();
-    }
-    
-    // Also update score display
-    if (this.onScoreUpdate) {
-      this.onScoreUpdate();
     }
   }
   
@@ -238,8 +185,6 @@ export class AsteroidsGame {
       this.onGameOver(this.score);
     }
   }
-  
-  // ===== GAME OBJECT MANAGEMENT =====
   
   /**
    * Initialize asteroids at the start of a level
@@ -362,8 +307,6 @@ export class AsteroidsGame {
     }, 3000);
   }
   
-  // ===== GAME UPDATE LOGIC =====
-  
   /**
    * Main game update loop
    */
@@ -461,7 +404,7 @@ export class AsteroidsGame {
           
           // Score points
           this.score += asteroid.scoreValue;
-          if (this.onScoreUpdate) this.onScoreUpdate();
+          if (this.onScoreUpdate) this.onScoreUpdate(this.score, this.scores.bestScore);
           
           // Break asteroid into smaller pieces
           this.breakAsteroid(i);
@@ -489,7 +432,7 @@ export class AsteroidsGame {
           this.lives--;
           this.heartBlinkTime = Date.now(); // Start heart blink animation
           
-          if (this.onScoreUpdate) this.onScoreUpdate();
+          if (this.onScoreUpdate) this.onScoreUpdate(this.score, this.scores.bestScore);
           
           if (this.lives <= 0) {
             this.gameOver();
@@ -502,8 +445,6 @@ export class AsteroidsGame {
       }
     }
   }
-  
-  // ===== RENDERING =====
   
   /**
    * Main draw function
@@ -543,7 +484,7 @@ export class AsteroidsGame {
     if (this.shipImageLoaded) {
       // Add glow effect when moving
       if (this.ship.thrust?.x !== 0) {
-        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--ship-stroke');
+        this.ctx.shadowColor = '#00f2ff';
         this.ctx.shadowBlur = 15;
         this.ctx.shadowOffsetX = 0;
         this.ctx.shadowOffsetY = 0;
@@ -559,7 +500,7 @@ export class AsteroidsGame {
       );
     } else {
       // Fallback to drawing a simple triangle if image is not loaded
-      this.ctx.strokeStyle = getComputedStyle(this.canvas).getPropertyValue('--ship-stroke');
+      this.ctx.strokeStyle = '#00f2ff';
       this.ctx.lineWidth = 2;
       this.ctx.beginPath();
       this.ctx.moveTo(0, -this.ship.radius);
@@ -582,8 +523,8 @@ export class AsteroidsGame {
         this.ctx.save();
         
         // Set up shadow for glow effect
-        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--bullet-glow');
-        this.ctx.shadowBlur = parseInt(getComputedStyle(this.canvas).getPropertyValue('--bullet-shadow-blur')) || 10;
+        this.ctx.shadowColor = '#ff0000';
+        this.ctx.shadowBlur = 10;
         
         // Calculate bullet dimensions - adjusted for screen size
         const sizeMultiplier = this.isSmallScreen ? 6 : 8;
@@ -610,9 +551,9 @@ export class AsteroidsGame {
       } else {
         // Fallback to drawing a circle if image is not loaded
         this.ctx.save();
-        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--bullet-fill');
-        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--bullet-glow');
-        this.ctx.shadowBlur = parseInt(getComputedStyle(this.canvas).getPropertyValue('--bullet-shadow-blur')) || 10;
+        this.ctx.fillStyle = '#ff3333';
+        this.ctx.shadowColor = '#ff0000';
+        this.ctx.shadowBlur = 10;
         
         this.ctx.beginPath();
         this.ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
@@ -651,13 +592,13 @@ export class AsteroidsGame {
         this.ctx.restore();
       } else {
         // Fallback to drawing a circle if image is not loaded
-        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--asteroid-fill');
+        this.ctx.fillStyle = '#00f2ff';
         this.ctx.beginPath();
         this.ctx.arc(asteroid.x, asteroid.y, asteroid.radius, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Add a glow effect
-        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--asteroid-fill');
+        this.ctx.shadowColor = '#00f2ff';
         this.ctx.shadowBlur = 10;
         this.ctx.shadowOffsetX = 0;
         this.ctx.shadowOffsetY = 0;
@@ -700,12 +641,12 @@ export class AsteroidsGame {
         this.ctx.translate(-x, -y);
         
         // Change color based on animation phase
-        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--heart-hit-fill');
-        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--heart-hit-fill');
+        this.ctx.fillStyle = '#ff3366';
+        this.ctx.shadowColor = '#ff3366';
       } else {
         // Normal heart
-        this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--heart-fill');
-        this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--heart-fill');
+        this.ctx.fillStyle = '#ff3366';
+        this.ctx.shadowColor = '#ff3366';
       }
       
       // Add stronger glow effect
@@ -726,14 +667,14 @@ export class AsteroidsGame {
    * Draw pause overlay
    */
   drawPauseOverlay() {
-    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-bg');
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     this.ctx.fillRect(0, 0, this.width, this.height);
     
-    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.fillStyle = '#00f2ff';
     this.ctx.font = `bold ${this.isSmallScreen ? '24px' : '30px'} Arial`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.shadowColor = '#00f2ff';
     this.ctx.shadowBlur = 10;
     this.ctx.fillText('PAUSED', this.width / 2, this.height / 2);
   }
@@ -742,19 +683,17 @@ export class AsteroidsGame {
    * Draw start screen overlay
    */
   drawStartScreenOverlay() {
-    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-bg');
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     this.ctx.fillRect(0, 0, this.width, this.height);
     
-    this.ctx.fillStyle = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.fillStyle = '#00f2ff';
     this.ctx.font = `bold ${this.isSmallScreen ? '24px' : '30px'} Arial`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.shadowColor = getComputedStyle(this.canvas).getPropertyValue('--overlay-text');
+    this.ctx.shadowColor = '#00f2ff';
     this.ctx.shadowBlur = 10;
     this.ctx.fillText('PRESS START', this.width / 2, this.height / 2);
   }
-  
-  // ===== CONTROL METHODS =====
   
   /**
    * Move ship left
@@ -776,243 +715,46 @@ export class AsteroidsGame {
   stopMoving() {
     this.ship.thrust = { x: 0, y: 0 };
   }
-}
-
-// ===== GAME INITIALIZATION =====
-
-/**
- * Initialize the game when DOM is loaded
- */
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize game instance
-  const game = new AsteroidsGame('game-board');
   
-  // Handle window resize to keep canvas properly sized
-  window.addEventListener('resize', () => {
-    const container = game.canvas.parentElement;
-    game.canvas.width = container.clientWidth;
-    game.canvas.height = container.clientHeight;
-    game.width = game.canvas.width;
-    game.height = game.canvas.height;
+  /**
+   * Cleanup resources
+   */
+  destroy() {
+    if (this.gameLoop) {
+      clearInterval(this.gameLoop);
+      this.gameLoop = null;
+    }
+  }
+  
+  /**
+   * Handle window resize
+   */
+  handleResize() {
+    const container = this.canvas.parentElement;
+    this.canvas.width = container.clientWidth;
+    this.canvas.height = container.clientHeight;
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
     
     // Update small screen flag
-    game.isSmallScreen = window.innerWidth <= 350;
+    this.isSmallScreen = window.innerWidth <= 350;
     
     // Update ship size based on screen size
-    game.ship.radius = game.isSmallScreen ? 12 : 15;
-    game.ship.width = game.isSmallScreen ? 30 : 40;
-    game.ship.height = game.isSmallScreen ? 30 : 40;
+    this.ship.radius = this.isSmallScreen ? 12 : 15;
+    this.ship.width = this.isSmallScreen ? 30 : 40;
+    this.ship.height = this.isSmallScreen ? 30 : 40;
     
     // Adjust margin for mobile screens
     if (window.innerWidth <= 768) {
-        game.canvas.style.margin = '0';
+      this.canvas.style.margin = '0';
     } else {
-        game.canvas.style.margin = '0.4rem auto';
+      this.canvas.style.margin = '0.4rem auto';
     }
     
     // Update ship position based on new dimensions
-    game.ship.x = Math.min(game.ship.x, game.width - game.ship.width/2);
-    game.ship.y = game.height - 60;
+    this.ship.x = Math.min(this.ship.x, this.width - this.ship.width/2);
+    this.ship.y = this.height - 60;
     
-    game.draw(); // Redraw game
-  });
-  
-  // Get DOM elements
-  const startButton = document.getElementById('start-button');
-  const pauseButton = document.getElementById('pause-button');
-  const restartButton = document.getElementById('restart-button');
-  const gameOver = document.getElementById('game-over');
-  const finalScore = document.getElementById('final-score');
-  const scoreDisplay = document.getElementById('score');
-  const bestScoreDisplay = document.getElementById('best-score');
-
-  // Mobile controls
-  const leftButton = document.getElementById('left-button');
-  const rightButton = document.getElementById('right-button');
-  const fireButton = document.getElementById('fire-button');
-
-  /**
-   * Update score display
-   */
-  function updateScore() {
-    scoreDisplay.textContent = game.score;
-    bestScoreDisplay.textContent = game.scores.bestScore;
+    this.draw(); // Redraw game
   }
-  
-  // Set up game callbacks
-  game.onScoreUpdate = updateScore;
-  
-  game.onGameStart = () => {
-    startButton.textContent = 'Restart';
-    pauseButton.disabled = false;
-  };
-  
-  game.onGamePause = () => {
-    pauseButton.textContent = 'Resume';
-    startButton.textContent = 'Restart';
-  };
-  
-  game.onGameResume = () => {
-    pauseButton.textContent = 'Pause';
-  };
-  
-  game.onGameReset = () => {
-    startButton.textContent = 'Start Game';
-    pauseButton.textContent = 'Pause';
-    pauseButton.disabled = true;
-  };
-  
-  game.onGameOver = (score) => {
-    finalScore.textContent = score;
-    gameOver.classList.add('visible');
-    startButton.textContent = 'Start Game';
-    pauseButton.disabled = true;
-    updateScore();
-  };
-
-  // Button event listeners
-  startButton.addEventListener('click', () => {
-    if (game.isPaused) {
-      // If game is paused, act as a restart button
-      game.reset();
-      game.start();
-    } else if (game.showStartScreen || game.isGameOver) {
-      // Normal start functionality
-      game.start();
-    } else {
-      // If game is running, act as a restart button
-      game.reset();
-      game.start();
-    }
-  });
-
-  pauseButton.addEventListener('click', () => {
-    if (game.gameLoop) { // Only allow pausing when the game is running
-      if (game.isPaused) {
-        game.resume();
-      } else {
-        game.pause();
-      }
-    }
-  });
-
-  restartButton.addEventListener('click', () => {
-    game.reset();
-    gameOver.classList.remove('visible');
-    updateScore();
-  });
-
-  // Mobile control event listeners
-  leftButton.addEventListener('mousedown', (e) => {
-    e.preventDefault(); // Prevent default behavior
-    game.moveLeft();
-  });
-  leftButton.addEventListener('mouseup', (e) => {
-    e.preventDefault(); 
-    game.stopMoving();
-  });
-  leftButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    game.moveLeft();
-  });
-  leftButton.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    game.stopMoving();
-  });
-
-  rightButton.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    game.moveRight();
-  });
-  rightButton.addEventListener('mouseup', (e) => {
-    e.preventDefault();
-    game.stopMoving();
-  });
-  rightButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    game.moveRight();
-  });
-  rightButton.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    game.stopMoving();
-  });
-
-  fireButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Stop the event from bubbling up
-    if (!game.showStartScreen && !game.isGameOver && game.gameLoop) {
-      game.shoot();
-    }
-  });
-  
-  // Make sure the fire button doesn't trigger any other events
-  fireButton.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Dispara al presionar el botón
-    if (!game.showStartScreen && !game.isGameOver && game.gameLoop) {
-      game.shoot();
-    }
-  });
-  
-  fireButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Dispara con el evento táctil
-    if (!game.showStartScreen && !game.isGameOver && game.gameLoop) {
-      game.shoot();
-    }
-  });
-
-  // Keyboard control event listeners
-  document.addEventListener('keydown', (e) => {
-    // Prevent default behavior for game controls
-    if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-      e.preventDefault();
-    }
-    
-    if (game.showStartScreen && e.key === ' ') {
-      // Start the game when pressing space on the start screen
-      game.start();
-      return;
-    }
-    
-    // Only process controls if the game is running and not paused or over
-    if (!game.gameLoop || game.isPaused || game.isGameOver) {
-      return;
-    }
-    
-    switch(e.key) {
-      case 'ArrowLeft':
-        game.moveLeft();
-        break;
-      case 'ArrowRight':
-        game.moveRight();
-        break;
-      case ' ':
-        game.shoot();
-        break;
-    }
-  });
-
-  document.addEventListener('keyup', (e) => {
-    // Prevent default behavior for game controls
-    if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      e.preventDefault();
-    }
-    
-    if (!game.gameLoop || game.isPaused || game.isGameOver) {
-      return;
-    }
-    
-    switch(e.key) {
-      case 'ArrowLeft':
-      case 'ArrowRight':
-        game.stopMoving();
-        break;
-    }
-  });
-
-  // Initialize the game display
-  updateScore();
-});
+} 

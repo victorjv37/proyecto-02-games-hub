@@ -1,17 +1,14 @@
-export class SnakeGame {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
-    this.ctx = this.canvas.getContext('2d');
+// Snake game logic component
+export class SnakeLogic {
+  constructor() {
     this.gridSize = 20;
-    this.tileSize = this.canvas.width / this.gridSize;
-    
     this.reset();
     this.loadScores();
     
-    // Prevenir el comportamiento de scroll por defecto en el canvas
-    this.canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-    }, { passive: false });
+    // Event callbacks
+    this.onBoardUpdate = null;
+    this.onGameOver = null;
+    this.onScoreUpdate = null;
   }
 
   reset() {
@@ -28,6 +25,11 @@ export class SnakeGame {
     this.isPaused = false;
     this.isGameOver = false;
     this.lastDirectionChange = Date.now();
+    
+    // Notify score update
+    if (this.onScoreUpdate) {
+      this.onScoreUpdate(this.score, this.scores.bestScore);
+    }
   }
 
   loadScores() {
@@ -53,7 +55,11 @@ export class SnakeGame {
   start() {
     if (!this.gameLoop) {
       this.gameLoop = setInterval(() => this.update(), 150);
-      this.draw();
+      
+      // Notify board update
+      if (this.onBoardUpdate) {
+        this.onBoardUpdate(this.snake, this.food);
+      }
     }
   }
 
@@ -90,12 +96,19 @@ export class SnakeGame {
     if (head.x === this.food.x && head.y === this.food.y) {
       this.score += 10;
       this.food = this.generateFood();
-      if (this.onScoreUpdate) this.onScoreUpdate();
+      
+      // Notify score update
+      if (this.onScoreUpdate) {
+        this.onScoreUpdate(this.score, this.scores.bestScore);
+      }
     } else {
       this.snake.pop();
     }
 
-    this.draw();
+    // Notify board update
+    if (this.onBoardUpdate) {
+      this.onBoardUpdate(this.snake, this.food);
+    }
   }
 
   checkCollision(head) {
@@ -104,34 +117,12 @@ export class SnakeGame {
       return true;
     }
 
-    // Self collision
-    return this.snake.some(segment => segment.x === head.x && segment.y === head.y);
-  }
-
-  draw() {
-    // Clear canvas
-    this.ctx.fillStyle = '#1a1a1a';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Draw snake
-    this.ctx.fillStyle = '#646cff';
-    this.snake.forEach((segment, index) => {
-      this.ctx.fillRect(
-        segment.x * this.tileSize,
-        segment.y * this.tileSize,
-        this.tileSize - 1,
-        this.tileSize - 1
-      );
+    // Self collision (skip the head/first element when checking)
+    return this.snake.some((segment, index) => {
+      // Skip the tail segment that will be removed (unless we've eaten food)
+      if (index === this.snake.length - 1) return false;
+      return segment.x === head.x && segment.y === head.y;
     });
-
-    // Draw food
-    this.ctx.fillStyle = '#ff4444';
-    this.ctx.fillRect(
-      this.food.x * this.tileSize,
-      this.food.y * this.tileSize,
-      this.tileSize - 1,
-      this.tileSize - 1
-    );
   }
 
   changeDirection(newDirection) {
@@ -142,7 +133,7 @@ export class SnakeGame {
       'right': 'left'
     };
 
-    // Limitar la frecuencia de cambio de dirección a 100ms para evitar giros de 180 grados accidentales
+    // Limit direction change frequency to 100ms to prevent accidental 180 degree turns
     const now = Date.now();
     if (now - this.lastDirectionChange < 100) {
       return;
@@ -164,8 +155,16 @@ export class SnakeGame {
       this.saveScores();
     }
 
+    // Notify game over
     if (this.onGameOver) {
       this.onGameOver(this.score);
+    }
+  }
+  
+  destroy() {
+    if (this.gameLoop) {
+      clearInterval(this.gameLoop);
+      this.gameLoop = null;
     }
   }
 } 
